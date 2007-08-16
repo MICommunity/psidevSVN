@@ -16,9 +16,8 @@ import psidev.psi.tools.xxindex.index.XpathIndex;
 import psidev.psi.tools.xxindex.StandardXmlElementExtractor;
 
 /**
- * Author: florian
+ * Author: Florian Reisinger
  * Date: 31-Jul-2007
- * Time: 16:48:29
  */
 public class XmlXpathIndexerTest {
 
@@ -95,6 +94,7 @@ public class XmlXpathIndexerTest {
                 XpathIndex index = null;
                 try {
                     index = XmlXpathIndexer.buildIndex(is);
+                    is.close();
                 } catch (IOException e) {
                     System.out.println("Caught IOException trying to build the index.");
                     e.printStackTrace();
