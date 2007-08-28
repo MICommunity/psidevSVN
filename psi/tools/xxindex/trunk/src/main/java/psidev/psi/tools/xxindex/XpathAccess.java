@@ -1,5 +1,7 @@
 package psidev.psi.tools.xxindex;
 
+import psidev.psi.tools.xxindex.index.XpathIndex;
+
 import java.util.List;
 import java.util.Iterator;
 import java.io.IOException;
@@ -15,4 +17,5 @@ public interface XpathAccess {
 
     public Iterator getXmlElementIterator(String xpath);
 
+    XpathIndex getIndex();
 }
