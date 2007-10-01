@@ -1,0 +1,140 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>psidev.psi.ms</groupId>
+    <artifactId>mzML_validator</artifactId>
+    <packaging>jar</packaging>
+    <version>0.01-SNAPSHOT</version>
+    
+    <name>PSI mzML semantic validator</name>
+    <description>
+        A semantic validator for PSI mzML XMl files.
+    </description>
+
+    <!-- Additions Florian -->
+    <properties>
+        <lib.dir>lib</lib.dir>
+    </properties>
+    <!-- Additions Florian -->
+
+    <build>
+        <plugins>
+            <!-- To compile with JDK5.0 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                </configuration>
+            </plugin>
+
+
+            <!-- Additions Florian -->
+            <finalName>mzMLValidator</finalName>
+
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-dependency-plugin</artifactId>
+               <executions>
+                 <execution>
+                   <id>copy-dependencies</id>
+                   <phase>package</phase>
+                   <goals>
+                     <goal>copy-dependencies</goal>
+                   </goals>
+                   <configuration>
+                     <outputDirectory>${project.build.directory}/${lib.dir}</outputDirectory>
+                     <overWriteReleases>false</overWriteReleases>
+                     <overWriteSnapshots>false</overWriteSnapshots>
+                     <overWriteIfNewer>true</overWriteIfNewer>
+                   </configuration>
+                 </execution>
+               </executions>
+            </plugin>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-jar-plugin</artifactId>
+              <configuration>
+                <archive>
+                  <manifest>
+                    <mainClass>psidev.psi.ms.MzMLValidatorGUI</mainClass>
+                    <addClasspath>true</addClasspath>
+                    <classpathPrefix>${lib.dir}</classpathPrefix>
+                  </manifest>
+                </archive>
+              </configuration>
+            </plugin>
+            <!-- Additions Florian -->
+
+        </plugins>
+    </build>
+
+    <repositories>
+        <repository>
+            <id>maven repository</id>
+            <name>Maven central repository</name>
+            <url>https://maven-repository.dev.java.net/nonav/repository</url>
+            <layout>legacy</layout>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <!-- EBI repositories -->
+        <repository>
+            <id>ebi-repo</id>
+            <name>The EBI internal repository</name>
+            <url>http://www.ebi.ac.uk/~maven/m2repo</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>ebi-repo-snapshots</id>
+            <name>The EBI internal repository</name>
+            <url>http://www.ebi.ac.uk/~maven/m2repo_snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>java.net</id>
+            <name>java.net Maven Repository</name>
+            <url>https://maven-repository.dev.java.net/nonav/repository</url>
+            <layout>legacy</layout>
+        </pluginRepository>
+    </pluginRepositories>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>psidev.psi.tools</groupId>
+            <artifactId>validator</artifactId>
+            <version>1.03-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>psidev.psi.tools</groupId>
+            <artifactId>xxindex</artifactId>
+            <version>0.1-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
+    <distributionManagement>
+    </distributionManagement>
+</project>

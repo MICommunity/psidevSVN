@@ -1,0 +1,7 @@
+<config>
+    <!-- List of rules that this specific validator should use -->
+    <rules>
+	    <!-- <rule>uk.ac.ebi.enfin.core.validator.extension.rules.MoleculeRule1</rule> -->
+	    <!-- <rule>uk.ac.ebi.enfin.core.validator.extension.rules.ExampleRule1</rule> -->
+    </rules>
+</config>

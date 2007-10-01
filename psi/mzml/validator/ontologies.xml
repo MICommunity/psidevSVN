@@ -1,0 +1,9 @@
+<CVSourceList>
+	<!-- <CVSource loader="psidev.psi.tools.ontology_manager.impl.local.LocalOntology" uri="file:///D:/lennart/ebi/projects/HUPO/PSI/MS/cvs_files/psi/psi-ms/mzML/controlledVocabulary/psi-ms.obo" cvFormat="OBO" name="PSI-MS" cvIdentifier="MS" version="1.01"/> -->
+    <CVSource loader="psidev.psi.tools.ontology_manager.impl.local.LocalOntology" uri="http://psidev.cvs.sourceforge.net/*checkout*/psidev/psi/psi-ms/mzML/controlledVocabulary/psi-ms.obo" cvFormat="OBO" name="PSI-MS" cvIdentifier="MS" version="1.01"/>
+    <!-- <CVSource uri="newt.obo?" cvFormat="OBO" name="NEWT taxonomy" cvIdentifier="NEWT" version="18/06/07"/> -->
+	<CVSource loader="psidev.psi.tools.ontology_manager.impl.ols.OlsOntology" uri="http://obo.cvs.sourceforge.net/*checkout*/obo/obo/ontology/anatomy/BrendaTissue.obo" cvFormat="OBO" name="BrendaTissue" cvIdentifier="BTO" version="1.258"/>
+	<CVSource loader="psidev.psi.tools.ontology_manager.impl.ols.OlsOntology" uri="http://pride-proteome.cvs.sourceforge.net/*checkout*/pride-proteome/PRIDE/schema/pride_cv.obo" cvFormat="OBO" name="PRIDE Ontology" cvIdentifier="PRIDE" version="1.54"/>
+	<CVSource loader="psidev.psi.tools.ontology_manager.impl.ols.OlsOntology" uri="http://obo.cvs.sourceforge.net/*checkout*/obo/obo/ontology/genomic-proteomic/gene_ontology.obo" cvFormat="OBO" name="Gene Ontology" cvIdentifier="GO" version="4.246"/>
+	<CVSource loader="psidev.psi.tools.ontology_manager.impl.ols.OlsOntology" uri="http://obo.cvs.sourceforge.net/*checkout*/obo/obo/ontology/phenotype/quality.obo" cvFormat="OBO" name="Phenotypic qualities (properties)" cvIdentifier="PATO" version="NA"/>
+</CVSourceList>
