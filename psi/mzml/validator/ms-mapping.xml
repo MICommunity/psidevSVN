@@ -67,7 +67,6 @@
     <CvMappingRule elementPath="/mzML/dataProcessingList/dataProcessing/processingMethod/cvParam/@accession" requirementLevel="MUST">
         <CvTerm termAccession="MS:1000543" useTerm="false" termName="data processing action" isRepeatable="true" allowChildren="true" cvIdentifier="MS"></CvTerm>
         <CvTerm termAccession="MS:1000530" useTerm="false" termName="file format conversion" isRepeatable="true" allowChildren="true" cvIdentifier="MS"></CvTerm>
-        <CvTerm termAccession="MS:1000035" useTerm="false" termName="peak processing" isRepeatable="true" allowChildren="true" cvIdentifier="MS"></CvTerm>
     </CvMappingRule>
     <!-- end of  data processing -->
 
