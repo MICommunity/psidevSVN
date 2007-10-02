@@ -54,7 +54,7 @@ import java.util.List;
     "spectrumDescription",
     "binaryDataArray"
 })
-public class SpectrumType {
+public class SpectrumType extends ParamGroupType {
 
     @XmlElement(required = true)
     protected SpectrumDescriptionType spectrumDescription;
@@ -113,7 +113,7 @@ public class SpectrumType {
 
     }
 
-    private void create(Node node) {
+    protected void create(Node node) {
         Element ele = (Element) node;
         if (ele != null) {
             // load attributes
@@ -151,8 +151,7 @@ public class SpectrumType {
             for ( int i = 0; i < nl.getLength(); i++ ) {
                 this.getBinaryDataArray().add(new BinaryDataArrayType((Element) nl.item(i)));
             }
-
-
+            super.create(node);
         }
     }
 

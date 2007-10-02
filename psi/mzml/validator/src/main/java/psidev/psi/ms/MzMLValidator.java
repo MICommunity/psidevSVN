@@ -301,7 +301,7 @@ public class MzMLValidator extends Validator {
                 String s = (String)lIterator.next();
                 tovalidate.add(new CVParamType(s));
             }
-            messages.addAll(this.checkCvMapping(tovalidate, "/mzML/runList/run/cvParam/"));
+            messages.addAll(this.checkCvMapping(tovalidate, "/mzML/run/cvParam/"));
 
 
             // -------------------- Validate each spectrum list. -------------------- //
@@ -314,7 +314,7 @@ public class MzMLValidator extends Validator {
                 String s = (String)lIterator.next();
                 tovalidate = new ArrayList(1);
                 tovalidate.add(new SpectrumType(s));
-                messages.addAll(this.checkCvMapping(tovalidate, "/mzML/runList/run/spectrumList/spectrum/"));
+                messages.addAll(this.checkCvMapping(tovalidate, "/mzML/run/spectrumList/spectrum/"));
             }
             if(aParent != null) {
                 aParent.setProgress(12, "Validation complete, compiling output...");

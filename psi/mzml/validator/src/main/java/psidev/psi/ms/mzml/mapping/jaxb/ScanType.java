@@ -8,6 +8,10 @@
 
 package psidev.psi.ms.mzml.mapping.jaxb;
 
+import org.w3c.dom.Node;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -41,6 +45,15 @@ public class ScanType
 
     @XmlAttribute(required = true)
     protected String instrumentRef;
+
+
+    protected void create(Node node) {
+        if (node != null) {
+            super.create(node);
+        }
+    }
+
+
 
     /**
      * Gets the value of the instrumentRef property.

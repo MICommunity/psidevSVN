@@ -48,9 +48,9 @@
         <CvTerm termAccession="MS:1000460" useTerm="false" termName="unit" isRepeatable="true" allowChildren="true" cvIdentifier="MS"></CvTerm>
     </CvMappingRule>
     <CvMappingRule elementPath="/mzML/instrumentList/instrument/componentList/detector/cvParam/@accession" requirementLevel="MUST">
-        <CvTerm termAccession="MS:1000026" useTerm="false" termName="detector" isRepeatable="false" scope="/mzML/instrumentList/instrument/componentList/detector" allowChildren="true" cvIdentifier="MS"></CvTerm> <!-- lennart is repeatable false? -->
-        <CvTerm termAccession="MS:1000027" useTerm="false" termName="detector acquisition mode" isRepeatable="false" scope="/mzML/instrumentList/instrument/componentList/detector" allowChildren="true" cvIdentifier="MS"></CvTerm> <!-- lennart is repeatable false? -->
-        <CvTerm termAccession="MS:1000481" useTerm="false" termName="detector attribute" isRepeatable="false" scope="/mzML/instrumentList/instrument/componentList/detector" allowChildren="true" cvIdentifier="MS"></CvTerm> <!-- lennart is repeatable false? -->
+        <CvTerm termAccession="MS:1000026" useTerm="false" termName="detector" isRepeatable="false" scope="/mzML/instrumentList/instrument/componentList/detector" allowChildren="true" cvIdentifier="MS"></CvTerm> 
+        <CvTerm termAccession="MS:1000027" useTerm="false" termName="detector acquisition mode" isRepeatable="false" scope="/mzML/instrumentList/instrument/componentList/detector" allowChildren="true" cvIdentifier="MS"></CvTerm> 
+        <CvTerm termAccession="MS:1000481" useTerm="false" termName="detector attribute" isRepeatable="false" scope="/mzML/instrumentList/instrument/componentList/detector" allowChildren="true" cvIdentifier="MS"></CvTerm> 
     </CvMappingRule>
     <CvMappingRule elementPath="/mzML/instrumentList/instrument/componentList/detector/cvParam/@unitAccession" requirementLevel="MAY">
         <CvTerm termAccession="MS:1000460" useTerm="false" termName="unit" isRepeatable="true" allowChildren="true" cvIdentifier="MS"></CvTerm>
@@ -59,7 +59,7 @@
 
     <!-- software-->
     <CvMappingRule elementPath="/mzML/softwareList/software/softwareParam/@accession" requirementLevel="MUST">
-        <CvTerm termAccession="MS:1000531" useTerm="false" termName="software" isRepeatable="false" scope="/mzML/softwareList/software" allowChildren="true" cvIdentifier="MS"></CvTerm> <!-- lennart is repeatable false? -->
+        <CvTerm termAccession="MS:1000531" useTerm="false" termName="software" isRepeatable="false" scope="/mzML/softwareList/software" allowChildren="true" cvIdentifier="MS"></CvTerm> 
     </CvMappingRule>
     <!-- end of software-->
 
@@ -71,18 +71,19 @@
     <!-- end of  data processing -->
 
     <!-- start of run
-    Cv Param on top level of run what's its use?
     <CvMappingRule elementPath="mzML/run/cvParam/@accession" requirementLevel="">
         <CvTerm termAccession="" useTerm="false" termName="" allowChildren="true" cvIdentifier="MS"></CvTerm>
     </CvMappingRule>-->
 
-    <CvMappingRule elementPath="/mzML/run/spectrumList/spectrum/@spectrumType" requirementLevel="MUST"> <!-- CV controlled attribute -->
-        <CvTerm termAccession="MS:1000559" useTermName="true" useTerm="false" termName="spectrum type" isRepeatable="false" scope="/mzML/run/spectrumList/spectrum" allowChildren="true" cvIdentifier="MS"></CvTerm>  <!-- lennart is repeatable false? -->
+    <CvMappingRule elementPath="/mzML/run/spectrumList/spectrum/cvParam/@accession" requirementLevel="MUST">
+        <CvTerm termAccession="MS:1000559" useTermName="false" useTerm="false" termName="spectrum type" isRepeatable="false" scope="/mzML/run/spectrumList/spectrum" allowChildren="true" cvIdentifier="MS"></CvTerm>
     </CvMappingRule>
     <!-- note attribute msLevel has a numerical value not CV controlled although the term ms level is in the CV-->
 
     <CvMappingRule elementPath="/mzML/run/spectrumList/spectrum/spectrumDescription/cvParam/@accession" requirementLevel="MUST">
-        <CvTerm termAccession="MS:1000499" useTerm="false" termName="spectrum attribute" isRepeatable="true" allowChildren="true" cvIdentifier="MS"></CvTerm>
+	    <CvTerm termAccession="MS:1000499" useTerm="false" termName="spectrum attribute" isRepeatable="true" allowChildren="true" cvIdentifier="MS"></CvTerm>
+	    <CvTerm termAccession="MS:1000525" useTerm="false" termName="spectrum representation" isRepeatable="false" scope="/mzML/run/spectrumList/spectrum/spectrumDescription" allowChildren="true" cvIdentifier="MS"></CvTerm>
+
     </CvMappingRule>
     <CvMappingRule elementPath="/mzML/run/spectrumList/spectrum/spectrumDescription/cvParam/@unitAccession" requirementLevel="MAY">
         <CvTerm termAccession="MS:1000460" useTerm="false" termName="unit" isRepeatable="true" allowChildren="true" cvIdentifier="MS"></CvTerm>
@@ -104,7 +105,6 @@
         <CvTerm termAccession="MS:1000018" useTerm="false" termName="scan direction" isRepeatable="false" scope="/mzML/run/spectrumList/spectrum/spectrumDescription/scan" allowChildren="true" cvIdentifier="MS"></CvTerm>
         <CvTerm termAccession="MS:1000019" useTerm="false" termName="scan law" isRepeatable="false" scope="/mzML/run/spectrumList/spectrum/spectrumDescription/scan" allowChildren="true" cvIdentifier="MS"></CvTerm>
         <CvTerm termAccession="MS:1000465" useTerm="false" termName="scan polarity" isRepeatable="false" scope="/mzML/run/spectrumList/spectrum/spectrumDescription/scan" allowChildren="true" cvIdentifier="MS"></CvTerm>
-        <CvTerm termAccession="MS:1000465" useTerm="false" termName="scan polarity" isRepeatable="false" scope="/mzML/run/spectrumList/spectrum/spectrumDescription/scan" allowChildren="true" cvIdentifier="MS"></CvTerm>
         <CvTerm termAccession="MS:1000020" useTerm="false" termName="scanning method" isRepeatable="false" scope="/mzML/run/spectrumList/spectrum/spectrumDescription/scan" allowChildren="true" cvIdentifier="MS"></CvTerm>
     </CvMappingRule>
     <CvMappingRule elementPath="/mzML/run/spectrumList/spectrum/spectrumDescription/scan/cvParam/@unitAccession" requirementLevel="MAY">
@@ -118,13 +118,9 @@
     </CvMappingRule>
 
     <CvMappingRule elementPath="/mzML/run/spectrumList/spectrum/binaryDataArray/cvParam/@accession" requirementLevel="MUST">
-        <CvTerm termAccession="MS:1000513" useTerm="false" termName="binary data array" isRepeatable="false" scope="/mzML/run/spectrumList/spectrum/binaryDataArray" allowChildren="true" cvIdentifier="MS"></CvTerm>
-    </CvMappingRule>
-    <CvMappingRule elementPath="/mzML/run/spectrumList/spectrum/binaryDataArray/@dataType" requirementLevel="MUST"> <!-- CV controlled attribute -->
-        <CvTerm termAccession="MS:1000518" useTermName="true" useTerm="false" termName="binary data type" isRepeatable="false" scope="/mzML/run/spectrumList/spectrum/binaryDataArray" allowChildren="true" cvIdentifier="MS"></CvTerm>
-    </CvMappingRule>
-    <CvMappingRule elementPath="/mzML/run/spectrumList/spectrum/binaryDataArray/@compressionType" requirementLevel="MUST"> <!-- CV controlled attribute -->
-        <CvTerm termAccession="MS:1000572" useTermName="true" useTerm="false" termName="binary data compression type" isRepeatable="false" scope="/mzML/run/spectrumList/spectrum/binaryDataArray" allowChildren="true" cvIdentifier="MS"></CvTerm>
+	    <CvTerm termAccession="MS:1000513" useTerm="false" termName="binary data array" isRepeatable="false" scope="/mzML/run/spectrumList/spectrum/binaryDataArray" allowChildren="true" cvIdentifier="MS"></CvTerm>
+        <CvTerm termAccession="MS:1000518" useTerm="false" termName="binary data type" isRepeatable="false" scope="/mzML/run/spectrumList/spectrum/binaryDataArray" allowChildren="true" cvIdentifier="MS"></CvTerm>
+        <CvTerm termAccession="MS:1000572" useTerm="false" termName="binary data compression type" isRepeatable="false" scope="/mzML/run/spectrumList/spectrum/binaryDataArray" allowChildren="true" cvIdentifier="MS"></CvTerm>
     </CvMappingRule>
 
 <!-- end of run-->
