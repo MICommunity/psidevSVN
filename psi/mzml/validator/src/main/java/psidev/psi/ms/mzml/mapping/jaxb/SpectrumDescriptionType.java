@@ -148,10 +148,10 @@ public class SpectrumDescriptionType
             }
             nl = null;
             nl = ele.getElementsByTagName("scan");
-            // we only expect one such element!
+            // we expect no more than one such element!
             if (nl.getLength() == 1) {
                 scan = new Scan((Element) nl.item(0));
-            } else {
+            } else if (nl.getLength()>1){
                 throw new IllegalStateException("Expected only one 'scan' element, but found: " + nl.getLength());
             }
             // inherited form ParamGroupType
