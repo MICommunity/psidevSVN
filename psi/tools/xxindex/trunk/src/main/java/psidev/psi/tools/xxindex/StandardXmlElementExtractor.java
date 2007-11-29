@@ -246,7 +246,7 @@ public class StandardXmlElementExtractor implements XmlElementExtractor {
             System.out.println("Using system default for encoding.");
             result = new String(bytes);
         } else {
-            System.out.println("Using encoding: " + encoding.name());
+            //System.out.println("Using encoding: " + encoding.name());
             try {
                 result = new String(bytes, encoding.name());
             } catch (UnsupportedEncodingException e) {

@@ -2,14 +2,10 @@ package psidev.psi.tools.xxindex.index;
 
 import org.apache.commons.io.input.CountingInputStream;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Stack;
-
-import psidev.psi.tools.xxindex.index.ByteBuffer;
-import psidev.psi.tools.xxindex.index.ByteRange;
-import psidev.psi.tools.xxindex.index.StandardXpathIndex;
-import psidev.psi.tools.xxindex.index.XmlElement;
 
 /**
  * Author: Florian Reisinger
@@ -21,7 +17,9 @@ public class XmlXpathIndexer {
     // Index method
 
     public static StandardXpathIndex buildIndex(InputStream is) throws IOException {
-        CountingInputStream cis = new CountingInputStream( is );
+        BufferedInputStream bis = new BufferedInputStream(is);
+
+        CountingInputStream cis = new CountingInputStream( bis );
 
         StandardXpathIndex index = new StandardXpathIndex();
 
