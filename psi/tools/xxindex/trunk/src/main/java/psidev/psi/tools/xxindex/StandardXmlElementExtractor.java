@@ -197,17 +197,30 @@ public class StandardXmlElementExtractor implements XmlElementExtractor {
      * @return byte array free of zero bytes.
      */
     public byte[] removeZeroBytes(byte[] bytes) {
-        ByteBuffer bb = new ByteBuffer();
+        // This code is pretty low-level and may seem peculiar.
+        // The reason for coding it this way is performance. If a
+        // collection is used here rather than a staging array,
+        // the performance drops immensely.
+        byte[] temp = new byte[bytes.length];
+        int count = 0;
         for (byte aByte : bytes) {
-            if (aByte != 0) {
-                bb.append(aByte);
+            if (aByte != (byte)0) {
+                temp[count] = aByte;
+                count++;
             }
         }
-        byte[] result = new byte[bb.size()];
-        int j = 0;
-        for (Byte aByte : bb) {
-            result[j++] = aByte;
+
+        // Now we know how many bytes we retrieved,
+        // so create a smaller array for the final result        // if necessary.
+        byte[] result = null;
+        if (count != bytes.length){
+            result = new byte[count];
+            System.arraycopy(temp, 0, result, 0, count);
+        } else {
+            result = temp;
         }
+
+
         return result;
     }
 

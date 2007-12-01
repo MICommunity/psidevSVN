@@ -38,6 +38,16 @@ public class ByteBuffer implements Iterable<Byte>{
         buffer.clear();
     }
 
+    public byte[] toArray() {
+        int liSize = buffer.size();
+        // Dimension the resulting array.
+        byte[] result =  new byte[liSize];
+        for(int i=0;i<liSize;i++) {
+            result[i] = buffer.get(i).byteValue();
+        }
+        return result;
+    }
+
     public String toString(String charsetName) {
         byte[] bArray = new byte[buffer.size()];
         int i = 0;
