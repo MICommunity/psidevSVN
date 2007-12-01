@@ -21,8 +21,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 /*
  * CVS information:
@@ -112,7 +114,7 @@ public class MzMLValidator extends Validator {
             InputStream objInput = new FileInputStream(objectRules);
 
             MzMLValidator validator = new MzMLValidator(ontInput, cvInput, objInput);
-            messages.addAll(validator.startValidation(mzML, null));
+            messages.addAll(validator.startValidation(mzML, msgLevel, null));
         } catch(Exception e) {
             System.err.println("\n\nException occurred: " + e.getMessage());
             e.printStackTrace();
@@ -120,20 +122,21 @@ public class MzMLValidator extends Validator {
 
 // ---------------- Print messages ---------------- //
 
-           printMessages(messages, msgLevel);
+           printMessages(messages);
     }
 
     /**
      *
      * @param mzMLFile  File with the mzML file to validate.
+     * @param aMsgLevel MessageLevel with the minimal messagelevel to report.
      * @param aParent   MzMLValidatorGUI that acts as the GUI parent of this validator.
      *                  Can be 'null' if ran from the command-line.
      * @return  Collection with validator messages.
      */
-    public Collection<ValidatorMessage> startValidation(File mzMLFile, MzMLValidatorGUI aParent) {
+    public Collection<ValidatorMessage> startValidation(File mzMLFile, MessageLevel aMsgLevel, MzMLValidatorGUI aParent) {
         Collection<ValidatorMessage> messages = new ArrayList<ValidatorMessage>();
         try {
-            messages.addAll(this.checkCvMappingRules());
+            addMessages(messages, this.checkCvMappingRules(), aMsgLevel);
             if(aParent != null) {
                 aParent.initProgress(0, 13, 0);
                 aParent.setProgress(1, "Reading CV rules...");
@@ -206,7 +209,7 @@ public class MzMLValidator extends Validator {
                 String s = (String)lIterator.next();
                 tovalidate.add(new ReferenceableParamGroupListType(s));
             }
-            messages.addAll(this.checkCvMapping(tovalidate, "/mzML/referenceableParamGroupList/"));
+            addMessages(messages, this.checkCvMapping(tovalidate, "/mzML/referenceableParamGroupList/"), aMsgLevel);
 
 
             // -------------------- Validate the CV list. -------------------- //
@@ -220,7 +223,8 @@ public class MzMLValidator extends Validator {
                 String s = (String)lIterator.next();
                 tovalidate.add(new CVListType(s));
             }
-            messages.addAll(this.checkCvMapping(tovalidate, "/mzML/cvList/"));
+            addMessages(messages, this.checkCvMapping(tovalidate, "/mzML/cvList/"), aMsgLevel);
+
 
            // -------------------- Validate the file description. -------------------- //
             xpath = root + "/fileDescription";
@@ -233,8 +237,7 @@ public class MzMLValidator extends Validator {
                 String s = (String)lIterator.next();
                 tovalidate.add(new FileDescriptionType(s));
             }
-            messages.addAll(this.checkCvMapping(tovalidate, "/mzML/fileDescription/"));
-
+            addMessages(messages, this.checkCvMapping(tovalidate, "/mzML/fileDescription/"), aMsgLevel);
 
 
             // -------------------- Validate the sample list. -------------------- //
@@ -248,7 +251,7 @@ public class MzMLValidator extends Validator {
                 String s = (String)lIterator.next();
                 tovalidate.add(new SampleListType(s));
             }
-            messages.addAll(this.checkCvMapping(tovalidate, "/mzML/sampleList/"));
+            addMessages(messages, this.checkCvMapping(tovalidate, "/mzML/sampleList/"), aMsgLevel);
 
 
             // -------------------- Validate the instrument list. -------------------- //
@@ -262,7 +265,7 @@ public class MzMLValidator extends Validator {
                 String s = (String)lIterator.next();
                 tovalidate.add(new InstrumentListType(s));
             }
-            messages.addAll(this.checkCvMapping(tovalidate, "/mzML/instrumentList/"));
+            addMessages(messages, this.checkCvMapping(tovalidate, "/mzML/instrumentList/"), aMsgLevel);
 
 
             // -------------------- Validate the software list. -------------------- //
@@ -276,7 +279,7 @@ public class MzMLValidator extends Validator {
                 String s = (String)lIterator.next();
                 tovalidate.add(new SoftwareListType.Software(s));
             }
-            messages.addAll(this.checkCvMapping(tovalidate, "/mzML/softwareList/software/"));
+            addMessages(messages, this.checkCvMapping(tovalidate, "/mzML/softwareList/software/"), aMsgLevel);
 
 
             // -------------------- Validate the data processing list. -------------------- //
@@ -287,7 +290,7 @@ public class MzMLValidator extends Validator {
                 String s = (String)lIterator.next();
                 tovalidate.add(new DataProcessingListType(s));
             }
-            messages.addAll(this.checkCvMapping(tovalidate, "/mzML/dataProcessingList/"));
+            addMessages(messages, this.checkCvMapping(tovalidate, "/mzML/dataProcessingList/"), aMsgLevel);
 
 
             // -------------------- Validate the run CV param list. -------------------- //
@@ -301,7 +304,7 @@ public class MzMLValidator extends Validator {
                 String s = (String)lIterator.next();
                 tovalidate.add(new CVParamType(s));
             }
-            messages.addAll(this.checkCvMapping(tovalidate, "/mzML/run/cvParam/"));
+            addMessages(messages, this.checkCvMapping(tovalidate, "/mzML/run/cvParam/"), aMsgLevel);
 
 
             // -------------------- Validate each spectrum list. -------------------- //
@@ -309,12 +312,24 @@ public class MzMLValidator extends Validator {
             if(aParent != null) {
                 aParent.setProgress(11, "Validating " + xpath + " (this might take a while)...");
             }
-            xmlStrings = xml.getXmlElements(xpath);
-            for (Iterator lIterator = xmlStrings.iterator(); lIterator.hasNext();) {
-                String s = (String)lIterator.next();
-                tovalidate = new ArrayList(1);
-                tovalidate.add(new SpectrumType(s));
-                messages.addAll(this.checkCvMapping(tovalidate, "/mzML/run/spectrumList/spectrum/"));
+            Iterator lIterator = xml.getXmlElementIterator(xpath);
+
+            // Create lock.
+            InnerLock lock =  new InnerLock();
+            InnerIteratorSync iteratorSync = new InnerIteratorSync(lIterator);
+            Collection<InnerSpecValidator> runners = new ArrayList<InnerSpecValidator>();
+            int processorCount = Runtime.getRuntime().availableProcessors();
+            for(int i=0;i<processorCount;i++) {
+                InnerSpecValidator runner = new InnerSpecValidator(iteratorSync, aMsgLevel, lock);
+                runners.add(runner);
+                new Thread(runner).start();
+            }
+
+            // Wait for it.
+            lock.isDone(runners.size());
+            for (Iterator innerSpecValidatorIterator = runners.iterator(); innerSpecValidatorIterator.hasNext();) {
+                InnerSpecValidator innerSpecValidator = (InnerSpecValidator) innerSpecValidatorIterator.next();
+                messages.addAll(innerSpecValidator.getMessages());
             }
             if(aParent != null) {
                 aParent.setProgress(12, "Validation complete, compiling output...");
@@ -331,6 +346,90 @@ public class MzMLValidator extends Validator {
         return messages;
     }
 
+    /**
+     * Simple wrapper class to allow synchronisation on the hasNext() and next()
+     * methods of the iterator.
+     */
+    private class InnerIteratorSync {
+        private Iterator iter = null;
+
+        public InnerIteratorSync(Iterator aIterator) {
+            iter = aIterator;
+        }
+
+        public synchronized boolean hasNext() {
+            return iter.hasNext();
+        }
+
+        public synchronized Object next() {
+            return iter.next();
+        }
+    }
+
+    /**
+     * Simple lock class so the main thread can detect worker threads' completion.
+     */
+    private class InnerLock {
+        private int doneCount = 0;
+
+        public synchronized void updateDoneCount() {
+            doneCount++;
+            notifyAll();
+        }
+
+        public synchronized boolean isDone(int totalCount) {
+            while(doneCount < totalCount) {
+                try {
+                    wait();
+                } catch(InterruptedException ie) {
+                    System.err.println("I've been interrupted...");
+                }
+            }
+            return true;
+        }
+    }
+
+    /**
+     * Runnable that requests the next spectrum from the synchronised iterator wrapper,
+     * and validates it.
+     */
+    private class InnerSpecValidator implements Runnable {
+        InnerIteratorSync iter = null;
+        MessageLevel msgLevel = null;
+        Collection messages = new ArrayList();
+        InnerLock lock = null;
+        int count = 0;
+
+        public InnerSpecValidator(InnerIteratorSync aIterator, MessageLevel aMsgLevel, InnerLock aLock) {
+            iter = aIterator;
+            msgLevel= aMsgLevel;
+            lock = aLock;
+        }
+
+        public void run() {
+            while (iter.hasNext()) {
+                String s = (String) iter.next();
+                ArrayList tovalidate = new ArrayList(1);
+                tovalidate.add(new SpectrumType(s));
+                try {
+                    addMessages(messages, checkCvMapping(tovalidate, "/mzML/run/spectrumList/spectrum/"), msgLevel);
+                    count++;
+                } catch(ValidatorException ve) {
+                    ve.printStackTrace();
+                }
+            }
+            lock.updateDoneCount();
+        }
+
+        public Collection getMessages() {
+            return messages;
+        }
+
+        public int getCount() {
+            return count;
+        }
+    }
+
     private static void printUsage() {
         printError("Usage:\n\n\t" + MzMLValidator.class.getName() + " <ontology_config_file> <cv_mapping_config_file> <coded_rules_config_file> <mzml_file_to_validate> <message_level>\n\n\t\tWhere message level can be:\n\t\t - DEBUG\n\t\t - INFO\n\t\t - WARN\n\t\t - ERROR\n\t\t - FATAL");
     }
@@ -340,23 +439,24 @@ public class MzMLValidator extends Validator {
         System.exit(1);
     }
 
-    private static void printMessages(Collection aMessages, MessageLevel aLevel) {
-        Collection messages = new ArrayList();
-        for (Iterator lIterator = aMessages.iterator(); lIterator.hasNext();) {
-            ValidatorMessage lMessage = (ValidatorMessage)lIterator.next();
-            if(lMessage.getLevel().isHigher(aLevel) || lMessage.getLevel().isSame(aLevel)) {
-                messages.add(lMessage);
-            }
-        }
-        
-        if(messages.size() != 0) {
+    private static void printMessages(Collection aMessages) {
+        if(aMessages.size() != 0) {
             System.out.println("\n\nThe following messages were obtained during the validation of your XML file:\n");
-            for (Iterator lIterator = messages.iterator(); lIterator.hasNext();) {
+            for (Iterator lIterator = aMessages.iterator(); lIterator.hasNext();) {
                 ValidatorMessage lMessage = (ValidatorMessage)lIterator.next();
                 System.out.println(" * " + lMessage + "\n");
             }
         } else {
             System.out.println("\n\nCongratulations! Your XML file passed the semantic validation!\n\n");
+        }
+    }
+
+    private static void addMessages(Collection<ValidatorMessage> aCollectionToAddMessagesTo, Collection<ValidatorMessage> aNewMessages, MessageLevel aLevel) {
+        for (Iterator validatorMessageIterator = aNewMessages.iterator(); validatorMessageIterator.hasNext();) {
+            ValidatorMessage validatorMessage = (ValidatorMessage) validatorMessageIterator.next();
+            if(validatorMessage.getLevel().isHigher(aLevel) || validatorMessage.getLevel().isSame(aLevel)) {
+                aCollectionToAddMessagesTo.add(validatorMessage);
+            }
         }
     }
 

@@ -309,6 +309,8 @@ public class MzMLValidatorGUI extends JPanel {
         sw = new SwingWorker() {
             public Object construct() {
                 Collection<ValidatorMessage> messages = new ArrayList<ValidatorMessage>();
+                txtOutput.setText("");
+                txtOutput.setCaretPosition(0);
                 progress.setIndeterminate(true);
                 progress.setString("Initializing validator...");
                 try {
@@ -322,7 +324,7 @@ public class MzMLValidatorGUI extends JPanel {
                         cvMapping.close();
                         codedRules.close();
                     }
-                    messages.addAll(validator.startValidation(inputFile, MzMLValidatorGUI.this));
+                    messages.addAll(validator.startValidation(inputFile, getLevel(), MzMLValidatorGUI.this));
                 } catch(Exception e) {
                     MzMLValidatorGUI.this.notifyOfError(e);
                 }
@@ -342,15 +344,14 @@ public class MzMLValidatorGUI extends JPanel {
             JOptionPane.showMessageDialog(this, new String[]{"A problem occurred when attempting to validate the mzML file!", error.getMessage()}, "Error occurred during validation!", JOptionPane.ERROR_MESSAGE);
         }
         Collection<ValidatorMessage> messages = (Collection<ValidatorMessage>)sw.get();
-        messages  = filterMessages(messages);
 
         if(messages != null && messages.size() > 0) {
             showMessages(messages);
         } else {
+            txtOutput.setText("\n\nNo messages were returned by the validator.");
             if(error == null) {
                 JOptionPane.showMessageDialog(MzMLValidatorGUI.this, "Your mzML file validated at the current message level.", "No messages produced.", JOptionPane.INFORMATION_MESSAGE);
             }
-            txtOutput.setText("\n\nNo messages were returned by the validator.");
         }
 
 
@@ -364,20 +365,6 @@ public class MzMLValidatorGUI extends JPanel {
         rbtInfo.setEnabled(true);
         rbtWarn.setEnabled(true);
         rbtError.setEnabled(true);
-    }
-
-    private Collection<ValidatorMessage> filterMessages(Collection<ValidatorMessage> aMessages) {
-        MessageLevel level = getLevel();
-
-        Collection<ValidatorMessage> result = new ArrayList<ValidatorMessage>();
-        for (Iterator lIterator = aMessages.iterator(); lIterator.hasNext();) {
-            ValidatorMessage lMessage = (ValidatorMessage)lIterator.next();
-            if(lMessage.getLevel().isHigher(level) || lMessage.getLevel().isSame(level)) {
-                result.add(lMessage);
-            }
-        }
-
-        return result;
     }
 
     private void showMessages(Collection<ValidatorMessage> aMessages) {
