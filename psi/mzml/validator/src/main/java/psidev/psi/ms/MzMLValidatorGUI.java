@@ -249,7 +249,7 @@ public class MzMLValidatorGUI extends JPanel {
             jpanValidator.txtInputFile.setText(args[0]);
         }
 
-        JFrame validatorFrame = new JFrame("mzML validator GUI (mzML version 0.99)");
+        JFrame validatorFrame = new JFrame("mzML validator GUI (mzML version 0.99.1)");
         validatorFrame.getContentPane().add(jpanValidator, BorderLayout.CENTER);
         validatorFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         validatorFrame.addWindowListener(new WindowAdapter() {
