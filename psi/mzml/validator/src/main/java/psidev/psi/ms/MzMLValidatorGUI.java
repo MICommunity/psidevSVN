@@ -15,12 +15,12 @@ import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.text.SimpleDateFormat;
 /*
  * CVS information:
  *
@@ -53,6 +53,7 @@ public class MzMLValidatorGUI extends JPanel {
     private SwingWorker sw = null;
     private Exception error = null;
 
+    private long runStartTime = -1l;
 
     private static final String DEFAULT_PROGRESS_MESSAGE = "Select a file and press validate...";
 
@@ -313,6 +314,7 @@ public class MzMLValidatorGUI extends JPanel {
                 txtOutput.setCaretPosition(0);
                 progress.setIndeterminate(true);
                 progress.setString("Initializing validator...");
+                MzMLValidatorGUI.this.runStartTime = System.currentTimeMillis();
                 try {
                     // Lazy cached validator.
                     if(validator == null) {
@@ -357,7 +359,11 @@ public class MzMLValidatorGUI extends JPanel {
 
         progress.setIndeterminate(false);
         progress.setValue(0);
-        progress.setString(DEFAULT_PROGRESS_MESSAGE);
+        // Calculate last run time.
+        long delta = System.currentTimeMillis() - runStartTime;
+        // Reset run start time and moment.
+        runStartTime = -1;
+        progress.setString(DEFAULT_PROGRESS_MESSAGE + " (last run took " + (delta/1000) + " seconds)");
         // Re-enable GUI.
         txtInputFile.setEnabled(true);
         btnBrowse.setEnabled(true);
