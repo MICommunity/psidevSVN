@@ -174,10 +174,10 @@ public class MzMLValidator extends Validator {
 // ---------------- Validation work proper ---------------- //
 
             // Decide whether the thing is 'indexedmzML' or regular 'mzML'.
-            String root = "mzML";
+            String root = "/mzML";
             XpathIndex index = xml.getIndex();
             if(!index.containsXpath(root)) {
-                root = "indexedmzML/mzML";
+                root = "/indexedmzML/mzML";
                 if(!index.containsXpath(root)) {
                     printError("Could not find known mzML root elements ('mzML' or 'indexedmzML/mzML')!\n\nExiting.");
                 }
