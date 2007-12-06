@@ -25,7 +25,7 @@ public class NumberOfElementsTest {
 
     @Test
     public void numberOfElementsTest() throws IOException, URISyntaxException {
-        String xpath = "first/second/third/fourth";
+        String xpath = "/first/second/third/fourth";
         URL url = NumberOfElementsTest.class.getClassLoader().getResource(".");
         File fileDir = new File(url.toURI());
         List<File> files = getTestFileList(fileDir, "test");

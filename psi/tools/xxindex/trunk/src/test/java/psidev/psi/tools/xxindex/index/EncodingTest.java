@@ -33,7 +33,7 @@ public class EncodingTest {
                 URL url = EncodingTest.class.getClassLoader().getResource(s);
                 InputStream is = url.openStream();
                 StandardXpathIndex index = XmlXpathIndexer.buildIndex(is);
-                ByteRange range = index.getRange("first/second/third/fourth").get(1);
+                ByteRange range = index.getRange("/first/second/third/fourth").get(1);
 
                 StandardXmlElementExtractor xee = new StandardXmlElementExtractor();
                 xee.setEncoding(xee.detectFileEncoding(url));

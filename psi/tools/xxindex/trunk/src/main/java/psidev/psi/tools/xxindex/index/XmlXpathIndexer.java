@@ -5,6 +5,7 @@ import org.apache.commons.io.input.CountingInputStream;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Set;
 import java.util.Stack;
 
 /**
@@ -14,14 +15,39 @@ import java.util.Stack;
 public class XmlXpathIndexer {
 
     ////////////////////
-    // Index method
+    // Index methods
 
+    /**
+     * This method indexes the XML file accessible via the specified inputstream.
+     * All xpaths encountered will be included in the index!
+     *
+     * @param is    inputstream to the XML file to index.
+     */
     public static StandardXpathIndex buildIndex(InputStream is) throws IOException {
+        return XmlXpathIndexer.buildIndex(is, null);
+    }
+
+    /**
+     * This method indexes the XML file accessible via the specified inputstream.
+     * All xpaths that do not correspond to one of the xpaths included
+     * in the xpath exclusion set will be ignored and therefore omitted from the index!
+     *
+     * @param is    inputstream to the XML file to index.
+     * @param aXpathInclusionSet    Set with the String representation
+     *                              of the xpaths to include in the index.
+     *                              <b>Note</b> that these xpaths should have
+     *                              their trailing '/' removed!
+     *                              <b>Also note</b> that any xpath not included
+     *                              in this list will <b>not</b> be added
+     *                              to the index! Can be 'null' to ensure
+     *                              inclusion of all xpaths.
+     */
+    public static StandardXpathIndex buildIndex(InputStream is, Set<String> aXpathInclusionSet) throws IOException {
         BufferedInputStream bis = new BufferedInputStream(is);
 
         CountingInputStream cis = new CountingInputStream( bis );
 
-        StandardXpathIndex index = new StandardXpathIndex();
+        StandardXpathIndex index = new StandardXpathIndex(aXpathInclusionSet);
 
         Stack<XmlElement> stack = new Stack<XmlElement>();
         byte[] buf = new byte[1];
@@ -180,11 +206,13 @@ public class XmlXpathIndexer {
      * @return a xpath expression representing the elements in the stack.
      */
     private static String createPathFromStack(Stack<XmlElement> stack) {
-        String path = ""; //"./";
+        StringBuilder path = new StringBuilder(100);
+        path.append("/");
         for (XmlElement element : stack) {
-            path += element.getName() + "/";
+            path.append(element.getName() + "/");
         }
-        return path.substring(0, path.length()-1); // get rid of last '/'
+        // Get rid of the trailing '/'.
+        return path.substring(0, path.length()-1); 
     }
 
 
