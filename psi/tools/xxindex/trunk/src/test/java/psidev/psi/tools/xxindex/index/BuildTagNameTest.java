@@ -12,7 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Author: Florian Reisinger
+ * BuildTagName Tester.
+ *
+ * @author Florian Reisinger
  * Date: 06-Aug-2007
  */
 public class BuildTagNameTest {
@@ -20,7 +22,7 @@ public class BuildTagNameTest {
     String controlTagName = "test";
 
     @Test
-    public void buildTagNameTest() throws URISyntaxException, IOException {
+    public void buildTagNameTest() throws Exception {
         List<ByteBuffer> buffers = createTestByteBuffer();
         System.out.println( "Number of test-cases: " + buffers.size() );
         for ( ByteBuffer buffer : buffers ) {
@@ -28,7 +30,6 @@ public class BuildTagNameTest {
             String tagName = XmlXpathIndexer.getTagName( buffer );
             System.out.println( "Extracted tag name: " + tagName );
             Assert.assertEquals("Extracted tag name does not match expected: ", controlTagName, tagName );
-
         }
     }
 
@@ -40,16 +41,13 @@ public class BuildTagNameTest {
         byte[] b = new byte[1];
 
         for (File file : files) {
-//            System.out.println( "Processing file: " + file.getName() );
             ByteBuffer bb = new ByteBuffer();
             FileInputStream fis = new FileInputStream(file);
             while ( fis.read(b) > 0 ) { // read byte by byte
                 bb.append( b[0] ); // append each byte to the ByteBuffer
             }
             bBuf.add( bb );
-//            System.out.println("buffer: " + bb.toString());
         }
         return bBuf;
     }
-    
 }
