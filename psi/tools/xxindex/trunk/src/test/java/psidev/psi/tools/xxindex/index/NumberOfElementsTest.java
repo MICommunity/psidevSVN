@@ -11,17 +11,14 @@ import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
 
-import psidev.psi.tools.xxindex.index.ByteRange;
-import psidev.psi.tools.xxindex.index.StandardXpathIndex;
-import psidev.psi.tools.xxindex.index.XmlXpathIndexer;
-
 /**
- * Author: florian
+ * TODO comment this.
+ *
+ * @author florian
  * Date: 01-Aug-2007
  * Time: 10:47:41
  */
 public class NumberOfElementsTest {
-
 
     @Test
     public void numberOfElementsTest() throws IOException, URISyntaxException {
@@ -57,6 +54,4 @@ public class NumberOfElementsTest {
         }
         return files;
     }
-
-
 }
