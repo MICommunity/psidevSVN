@@ -9,9 +9,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import psidev.psi.tools.xxindex.index.ByteRange;
-import psidev.psi.tools.xxindex.index.StandardXpathIndex;
-import psidev.psi.tools.xxindex.index.XmlXpathIndexer;
 import psidev.psi.tools.xxindex.StandardXmlElementExtractor;
 
 /**
@@ -20,7 +17,6 @@ import psidev.psi.tools.xxindex.StandardXmlElementExtractor;
  * Time: 16:52:13
  */
 public class EncodingTest {
-
 
     @Test
     public void encodingTest() {
@@ -38,7 +34,6 @@ public class EncodingTest {
                 StandardXmlElementExtractor xee = new StandardXmlElementExtractor();
                 xee.setEncoding(xee.detectFileEncoding(url));
                 System.out.println("Specifying encoding: " + xee.getEncoding().name());
-//                xee.setPreferDetect(true); // detection on byte array does not work reliably!
                 xee.setCompareWithDetect(true);
                 String test = xee.readByteRange(range.getStart(), range.getStop(), new File(url.toURI()));
                 Assert.assertEquals("Retrieved String from file " + url + " not the same as the control!", control, test);
@@ -55,25 +50,23 @@ public class EncodingTest {
         List<String> fileList = new ArrayList<String>();
 
         fileList.add("test-ascii-wo-header.xml");
-//        fileList.add("test-ascii-wo-header-flat.xml");
+        fileList.add("test-ascii-wo-header-flat.xml");
 
         fileList.add("test-juan-header.xml");
-//        fileList.add("test-juan-wo-header.xml");
+        fileList.add("test-juan-wo-header.xml");
 
         fileList.add("test-utf8-header.xml");
-//        fileList.add("test-utf8-header2.xml");
-//        fileList.add("test-utf8-header-flat.xml");
-//        fileList.add("test-utf8-header-flat2.xml");
-//        fileList.add("test-utf8-wo-header.xml");
-//        fileList.add("test-utf8-wo-header2.xml");
-//        fileList.add("test-utf8-wo-header-flat.xml");
-//        fileList.add("test-utf8-wo-header-flat2.xml");
+        fileList.add("test-utf8-header2.xml");
+        fileList.add("test-utf8-header-flat.xml");
+        fileList.add("test-utf8-header-flat2.xml");
+        fileList.add("test-utf8-wo-header.xml");
+        fileList.add("test-utf8-wo-header2.xml");
+        fileList.add("test-utf8-wo-header-flat.xml");
+        fileList.add("test-utf8-wo-header-flat2.xml");
 
-//        fileList.add("test-win1252-header.xml");
+        fileList.add("test-win1252-header.xml");
         fileList.add("test-win1252-header-flat.xml");
 
         return fileList;
     }
-
-
 }
