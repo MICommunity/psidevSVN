@@ -1,12 +1,12 @@
 package psidev.psi.tools.xxindex.index;
 
-import psidev.psi.tools.xxindex.index.ByteRange;
-import psidev.psi.tools.xxindex.index.XpathIndex;
-
 import java.util.*;
 
 /**
- * Author: florian
+ * TODO comment this.
+ *
+ * @author florian
+ * @version $Id$
  * Date: 24-Jul-2007
  * Time: 10:08:29
  */
@@ -151,5 +151,4 @@ public class StandardXpathIndex implements XpathIndex {
         }
         return sb.toString();
     }
-
 }
