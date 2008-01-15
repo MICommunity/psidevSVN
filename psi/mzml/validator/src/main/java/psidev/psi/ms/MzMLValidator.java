@@ -21,11 +21,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
+import java.util.*;
 /*
  * CVS information:
  *
@@ -160,8 +156,33 @@ public class MzMLValidator extends Validator {
                 aParent.setProgress(2, "Indexing mzML file (this might take a while)...");
             }
 
+            // Create the index inclusion list.
+            // Note that both the '/mzML' and 'indexedmzML/mzML'
+            // versions are included.
+            Set<String> xpathInclusionSet = new HashSet<String>(20);
+            xpathInclusionSet.add("/mzML");
+            xpathInclusionSet.add("/indexedmzML/mzML");
+            xpathInclusionSet.add("/mzML/run/cvParam");
+            xpathInclusionSet.add("/mzML/dataProcessingList");
+            xpathInclusionSet.add("/mzML/softwareList/software");
+            xpathInclusionSet.add("/mzML/instrumentList");
+            xpathInclusionSet.add("/mzML/sampleList");
+            xpathInclusionSet.add("/mzML/fileDescription");
+            xpathInclusionSet.add("/mzML/cvList");
+            xpathInclusionSet.add("/mzML/referenceableParamGroupList");
+            xpathInclusionSet.add("/mzML/run/spectrumList/spectrum");
+            xpathInclusionSet.add("/indexedmzML/mzML/run/cvParam");
+            xpathInclusionSet.add("/indexedmzML/mzML/dataProcessingList");
+            xpathInclusionSet.add("/indexedmzML/mzML/softwareList/software");
+            xpathInclusionSet.add("/indexedmzML/mzML/instrumentList");
+            xpathInclusionSet.add("/indexedmzML/mzML/sampleList");
+            xpathInclusionSet.add("/indexedmzML/mzML/fileDescription");
+            xpathInclusionSet.add("/indexedmzML/mzML/cvList");
+            xpathInclusionSet.add("/indexedmzML/mzML/referenceableParamGroupList");
+            xpathInclusionSet.add("/indexedmzML/mzML/run/spectrumList/spectrum");
+
             // In getting here we should be ready to create an index.
-            XpathAccess xml = new StandardXpathAccess(mzMLFile);
+            XpathAccess xml = new StandardXpathAccess(mzMLFile, xpathInclusionSet);
 
             // Now get a dom parser for these elements.
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
