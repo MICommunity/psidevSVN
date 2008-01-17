@@ -20,7 +20,6 @@ public class EncodingTest {
 
     @Test
     public void encodingTest() {
-        String control = "<fourth>Ò—Û˙¡…Õ⁄”</fourth>";
 
         List<String> fileList = createTestFileList();
         for (String s : fileList) {
@@ -36,7 +35,8 @@ public class EncodingTest {
                 System.out.println("Specifying encoding: " + xee.getEncoding().name());
                 xee.setCompareWithDetect(true);
                 String test = xee.readByteRange(range.getStart(), range.getStop(), new File(url.toURI()));
-                Assert.assertEquals("Retrieved String from file " + url + " not the same as the control!", control, test);
+                Assert.assertTrue("The String retrieved from the byte offset (" + range.getStart() + "-" + range.getStop() + ") did not start with the expected '<fourth>' element!", test.startsWith("<fourth>"));
+                Assert.assertTrue("The String retrieved from the byte offset (" + range.getStart() + "-" + range.getStop() + ") did not end with the expected '</fourth>' element!", test.endsWith("</fourth>"));
 
                 System.out.println("Checked file: " + url);
             } catch (Exception e) {
