@@ -17,9 +17,9 @@ package psidev.psi.tools.xxindex;
 
 import org.junit.Assert;
 import org.junit.Test;
-import psidev.psi.tools.xxindex.index.XmlXpathIndexer;
+import psidev.psi.tools.xxindex.index.IndexElement;
 import psidev.psi.tools.xxindex.index.StandardXpathIndex;
-import psidev.psi.tools.xxindex.index.ByteRange;
+import psidev.psi.tools.xxindex.index.XmlXpathIndexer;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -54,17 +54,17 @@ public class PsiMiIndexingTest {
         Assert.assertTrue( index.containsXpath( "/entrySet/entry/interactionList/interaction/participantList/participant/featureList/feature" ) );
 
         // check that main elements have been indexed
-        Assert.assertEquals( 2, index.getRangeCount( "/entrySet/entry/experimentList/experimentDescription" ));
-        Assert.assertEquals( 5, index.getRangeCount( "/entrySet/entry/interactorList/interactor" ));
-        Assert.assertEquals( 7, index.getRangeCount( "/entrySet/entry/interactionList/interaction" ) );
-        Assert.assertEquals( 14, index.getRangeCount( "/entrySet/entry/interactionList/interaction/participantList/participant" ) );
-        Assert.assertEquals( 10, index.getRangeCount( "/entrySet/entry/interactionList/interaction/participantList/participant/featureList/feature" ) );
+        Assert.assertEquals( 2, index.getElementCount( "/entrySet/entry/experimentList/experimentDescription" ));
+        Assert.assertEquals( 5, index.getElementCount( "/entrySet/entry/interactorList/interactor" ));
+        Assert.assertEquals( 7, index.getElementCount( "/entrySet/entry/interactionList/interaction" ) );
+        Assert.assertEquals( 14, index.getElementCount( "/entrySet/entry/interactionList/interaction/participantList/participant" ) );
+        Assert.assertEquals( 10, index.getElementCount( "/entrySet/entry/interactionList/interaction/participantList/participant/featureList/feature" ) );
 
         // now let's extract a few stuffs
         StandardXmlElementExtractor xee = new StandardXmlElementExtractor();
-        final List<ByteRange> ranges = index.getRange( "/entrySet/entry/interactionList/interaction" );
+        final List<IndexElement> ranges = index.getElements( "/entrySet/entry/interactionList/interaction" );
         Assert.assertEquals( 7, ranges.size() );
-        final ByteRange range = ranges.get( 0 );
-        final String xml = xee.readByteRange( range, file );
+        final IndexElement element = ranges.get( 0 );
+        final String xml = xee.readString( element, file );
     }
 }

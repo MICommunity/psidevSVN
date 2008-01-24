@@ -1,7 +1,5 @@
 package psidev.psi.tools.xxindex.index;
 
-import psidev.psi.tools.xxindex.index.ByteRange;
-
 import java.util.Set;
 import java.util.List;
 
@@ -14,11 +12,11 @@ public interface XpathIndex {
     
     Set<String> getKeys();
 
-    List<ByteRange> getRange(String xpath);
+    List<IndexElement> getElements(String xpath);
 
-    void put(String path, ByteRange range);
+    void put(String path, long start, long stop, long lineNumber);
 
-    int getRangeCount(String xpath);
+    int getElementCount(String xpath);
 
     boolean containsXpath(String xpath);
 

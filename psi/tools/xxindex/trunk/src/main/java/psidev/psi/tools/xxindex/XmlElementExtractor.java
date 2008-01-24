@@ -12,7 +12,9 @@ import java.net.URL;
 public interface XmlElementExtractor {
     int setEncoding(String encoding);
 
-    String readByteRange(long from, long to, File file) throws IOException;
+    byte[] readBytes(long from, long to, File file) throws IOException;
+
+    String readString(long from, long to, File file) throws IOException;
 
     String detectFileEncoding(URL fileLocation) throws IOException;
 

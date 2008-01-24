@@ -1,31 +1,33 @@
 package psidev.psi.tools.xxindex.index;
 
-import psidev.psi.tools.xxindex.index.ByteRange;
-
 /**
- * Author: florian
+ * Author: Florian Reisinger
  * Date: 23-Jul-2007
- * Time: 15:40:43
  */
 public class XmlElement {
 
-    private String name;
-    private ByteRange range;
+    private String xmlSnippet;
+    private long startPos;
 
-
-    public String getName() {
-        return name;
+    public XmlElement(String xmlString, long startPosition) {
+        this.xmlSnippet = xmlString;
+        this.startPos = startPosition;
     }
 
-    public void setName(String name) {
-        this.name = name;
+
+    public String getXmlSnippet() {
+        return xmlSnippet;
     }
 
-    public ByteRange getRange() {
-        return range;
+    public void setXmlSnippet(String xmlSnippet) {
+        this.xmlSnippet = xmlSnippet;
     }
 
-    public void setRange(ByteRange range) {
-        this.range = range;
+    public long getStartPos() {
+        return startPos;
+    }
+
+    public void setStartPos(long startPos) {
+        this.startPos = startPos;
     }
 }

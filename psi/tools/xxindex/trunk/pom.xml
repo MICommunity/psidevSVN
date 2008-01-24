@@ -7,7 +7,7 @@
     <groupId>psidev.psi.tools</groupId>
     <artifactId>xxindex</artifactId>
     <packaging>jar</packaging>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.3</version>
 
     <name>PSI :: Tools :: Xml XPath Indexer</name>
 

@@ -3,18 +3,16 @@ package psidev.psi.tools.xxindex.index;
 import java.util.*;
 
 /**
- * TODO comment this.
- *
- * @author florian
- * @version $Id$
- * Date: 24-Jul-2007
- * Time: 10:08:29
+ * Author: Florian Reisinger
+ * Date: 11-Jan-2008
  */
 public class StandardXpathIndex implements XpathIndex {
 
-    private Map<String, List<ByteRange>> index;
+    private Map<String, List<IndexElement>> index;
 
     private Set<String> xpathInclusionSet = null;
+
+    private boolean recordLineNumber;
 
     ////////////////////
     // Constructors
@@ -42,49 +40,70 @@ public class StandardXpathIndex implements XpathIndex {
      *                              inclusion of all xpaths.
      */
     public StandardXpathIndex(Set<String> aXpathInclusionSet) {
-        index = new HashMap<String, List<ByteRange>>();
+        index = new HashMap<String, List<IndexElement>>();
         // If we have a 'non-null' inclusion set, check it for trailing '/'
         // while initializing the inclusion set instance variable.
         // If the inclusion set is 'null', leave the instance variable 'null'as well -
         // it will then be ignored.
         if(aXpathInclusionSet != null) {
             xpathInclusionSet = new HashSet<String>(aXpathInclusionSet.size());
-            for (Iterator stringIterator = aXpathInclusionSet.iterator(); stringIterator.hasNext();) {
-                String s = (String) stringIterator.next();
-                if(s.endsWith("/")) {
-                    s = s.substring(0, s.length()-1);
+            for (String s : aXpathInclusionSet) {
+                if (s.endsWith("/")) {
+                    s = s.substring(0, s.length() - 1);
                 }
                 xpathInclusionSet.add(s);
             }
         }
+        this.recordLineNumber = true;
     }
 
 
     ////////////////////
     // Getter + Setter
 
+    public boolean isRecordLineNumber() {
+        return recordLineNumber;
+    }
+
+    public void setRecordLineNumber(boolean recordLineNumber) {
+        this.recordLineNumber = recordLineNumber;
+    }
+
     public Set<String> getKeys() {
         return index.keySet();
     }
 
-    public List<ByteRange> getRange(String xpath) {
+    public List<IndexElement> getElements(String xpath) {
         if(xpath.endsWith("/")) {
             xpath = xpath.substring(0, xpath.length()-1);
         }
-        List<ByteRange> list =  index.get(xpath);
+        List<IndexElement> list = index.get(xpath);
         if (list == null) {
-            list = new ArrayList<ByteRange>();
+            list = new ArrayList<IndexElement>();
             index.put(xpath, list);
         }
         return list;
     }
 
-    public void put(String path, ByteRange range) {
+    public void put(String path, long start, long stop) {
+        this.put(path, start, stop, -1);
+    }
+
+    public void put(String xpath, long start, long stop, long lineNumber) {
         // Check whether we have an inclusion list.
-        if (xpathInclusionSet != null && !xpathInclusionSet.contains(path)) {
+        if (xpathInclusionSet != null && !xpathInclusionSet.contains(xpath)) {
             return;
         }
-        this.getRange(path).add(range);
+        //ToDo: ? check wheather that range already exists (should never be the case, since we scan over the file only once)
+        
+        IndexElement element;
+        if (recordLineNumber) {
+            element = new LineNumberedByteRange(start, stop, lineNumber);
+        } else {
+            element = new ByteRange(start, stop, lineNumber);
+        }
+
+        this.getElements(xpath).add(element);
     }
 
     ////////////////////
@@ -96,12 +115,12 @@ public class StandardXpathIndex implements XpathIndex {
      * @param xpath the xpath to the element of interest (one key of the index).
      * @return the number of elements stored under this key or -1 if no entry with the specified key exists.
      */
-    public int getRangeCount(String xpath) {
+    public int getElementCount(String xpath) {
         if(xpath.endsWith("/")) {
             xpath = xpath.substring(0, xpath.length()-1);
         }
         int cnt = -1;
-        List <ByteRange> ranges = index.get(xpath);
+        List <IndexElement> ranges = index.get(xpath);
         if ( ranges != null ) {
             cnt = ranges.size();
         }
@@ -125,10 +144,10 @@ public class StandardXpathIndex implements XpathIndex {
     public String toString() {
         StringBuffer sb = new StringBuffer();
         for ( String key : index.keySet() ) {
-            List<ByteRange> entries = getRange(key);
+            List<IndexElement> entries = getElements(key);
             sb.append("xPath: ");
             sb.append(key);
-            sb.append(" entries: " + entries.size());
+            sb.append(" entries: ").append(entries.size());
             sb.append("\n");
         }
         return sb.toString();
@@ -137,18 +156,23 @@ public class StandardXpathIndex implements XpathIndex {
     public String print() {
         StringBuffer sb = new StringBuffer();
         for ( String key : index.keySet() ) {
-            List<ByteRange> entries = getRange(key);
+            List<IndexElement> entries = getElements(key);
             sb.append("xPath: ");
             sb.append(key);
             sb.append("\n");
-            for (ByteRange range : entries) {
+            for (IndexElement element : entries) {
                 sb.append("\tLocation : ");
-                sb.append(range.getStart());
+                sb.append(element.getStart());
                 sb.append("-");
-                sb.append(range.getStop());
+                sb.append(element.getStop());
+                sb.append(" in line: ");
+                sb.append(element.getLineNumber());
                 sb.append("\n");
             }
         }
         return sb.toString();
     }
+
+    
+
 }

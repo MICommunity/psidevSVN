@@ -30,7 +30,7 @@ public class NumberOfElementsTest {
         for (File file : files) {
             FileInputStream fis = new FileInputStream(file);
             StandardXpathIndex index = XmlXpathIndexer.buildIndex(fis);
-            List<ByteRange> brList = index.getRange(xpath);
+            List<IndexElement> brList = index.getElements(xpath);
             int elementCount = brList.size();
             Assert.assertEquals("Xml file '" + file.getName() + "' has to have 5 elements at '" + xpath + "'!", 5, elementCount);
         }

@@ -7,15 +7,14 @@ import java.util.Iterator;
 import java.io.IOException;
 
 /**
- * Author: florian
+ * Author: Florian Reisinger
  * Date: 03-Aug-2007
- * Time: 14:31:12
  */
 public interface XpathAccess {
 
-    public List<String> getXmlElements(String xpath) throws IOException;
+    public List<String> getXmlSnippets(String xpath) throws IOException;
 
-    public Iterator getXmlElementIterator(String xpath);
+    public Iterator<String> getXmlSnippetIterator(String xpath);
 
     XpathIndex getIndex();
 }

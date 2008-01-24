@@ -1,9 +1,10 @@
 package psidev.psi.tools.xxindex;
 
-import cpdetector.io.CodepageDetectorProxy;
-import cpdetector.io.ParsingDetector;
-import cpdetector.io.JChardetFacade;
 import cpdetector.io.ASCIIDetector;
+import cpdetector.io.CodepageDetectorProxy;
+import cpdetector.io.JChardetFacade;
+import cpdetector.io.ParsingDetector;
+import psidev.psi.tools.xxindex.index.IndexElement;
 
 import java.io.*;
 import java.net.URL;
@@ -12,13 +13,9 @@ import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Set;
 
-import psidev.psi.tools.xxindex.index.ByteBuffer;
-import psidev.psi.tools.xxindex.index.ByteRange;
-
 /**
- * Author: florian
+ * Author: Florian Reisinger
  * Date: 24-Jul-2007
- * Time: 17:47:45
  */
 public class StandardXmlElementExtractor implements XmlElementExtractor {
 
@@ -121,18 +118,18 @@ public class StandardXmlElementExtractor implements XmlElementExtractor {
 
 
     /**
-     * Same as readByteRange(long from, long to, File file), but start and stop wrapped in a ByteRange object.
+     * Same as readString(long from, long to, File file), but start and stop wrapped in a ByteRange object.
      * @param br the ByteRange to read.
      * @param file the file to read from.
      * @return the XML element including start and stop tag in a String.
      * @throws IOException if an I/O error occurs while reading.
      */
-    public String readByteRange(ByteRange br, File file) throws IOException {
-        return readByteRange(br.getStart(), br.getStop(), file);
+    public String readString(IndexElement br, File file) throws IOException {
+        return readString(br.getStart(), br.getStop(), file);
     }
 
     /**
-     * Convenience method that combines the methods: getByteRange(), removeZeroBytes() and bytes2String().
+     * Convenience method that combines the methods: readBytes(), removeZeroBytes() and bytes2String().
      *
      * Read a String representing a XML element from the specified file (which will be opened read-only).
      * Will read from position 'from' for length 'to - from'.
@@ -142,9 +139,9 @@ public class StandardXmlElementExtractor implements XmlElementExtractor {
      * @return the XML element including start and stop tag in a String.
 //     * @throws IOException if an I/O error occurs while reading.
      */
-    public String readByteRange(long from, long to, File file) {
+    public String readString(long from, long to, File file) throws IOException {
         // retrieve the bytes from the given range in the file
-        byte[] bytes = getByteRange(from, to, file);
+        byte[] bytes = readBytes(from, to, file);
 
         // remove all zero bytes (Mac filling bytes)
         byte[] newBytes = removeZeroBytes(bytes);
@@ -159,35 +156,19 @@ public class StandardXmlElementExtractor implements XmlElementExtractor {
      * @param to how long to read.
      * @param file in which file to read.
      * @return what was read.
-//     * @throws IOException if a I/O Exception during the reading process occurs.
+     * @throws IOException if a I/O Exception during the reading process occurs.
      */
-    public byte[] getByteRange(long from, long to, File file) {
-        byte[] bytes = new byte[0];
-        RandomAccessFile raf = null;
-        try {
-            raf = new RandomAccessFile(file, "r");
+    public byte[] readBytes(long from, long to, File file) throws IOException {
+        RandomAccessFile raf = new RandomAccessFile(file, "r");
 
-            // go to specified start position
-            raf.seek(from);
-            Long length = to - from;
-            bytes = new byte[length.intValue()];
+        // go to specified start position
+        raf.seek(from);
+        Long length = to - from;
+        byte[] bytes = new byte[length.intValue()];
 
-            // read into buffer
-            raf.read(bytes, 0, length.intValue());
-            raf.close();
-        } catch ( IOException ioe ) {
-          ioe.printStackTrace();
-        } finally {
-            try {
-                if ( raf != null ) {
-                    raf.close();
-                }
-            } catch (IOException e) {
-                System.out.println("Could not close RandomAccessFile while reading form Xml file: " + file.getName());
-                // ToDo: throw new Exception
-                e.printStackTrace();
-            }
-        }
+        // read into buffer
+        raf.read(bytes, 0, length.intValue());
+        raf.close();
         return bytes;
     }
 
@@ -212,14 +193,13 @@ public class StandardXmlElementExtractor implements XmlElementExtractor {
 
         // Now we know how many bytes we retrieved,
         // so create a smaller array for the final result        // if necessary.
-        byte[] result = null;
+        byte[] result;
         if (count != bytes.length){
             result = new byte[count];
             System.arraycopy(temp, 0, result, 0, count);
         } else {
             result = temp;
         }
-
 
         return result;
     }

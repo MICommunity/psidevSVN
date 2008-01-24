@@ -2,15 +2,15 @@ package psidev.psi.tools.xxindex.index;
 
 import org.apache.commons.io.input.CountingInputStream;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.IOException;
+import java.io.BufferedInputStream;
 import java.util.Set;
 import java.util.Stack;
 
 /**
  * Author: Florian Reisinger
- * Date: 23-Jul-2007
+ * Date: 11-Jan-2008
  */
 public class XmlXpathIndexer {
 
@@ -22,6 +22,8 @@ public class XmlXpathIndexer {
      * All xpaths encountered will be included in the index!
      *
      * @param is    inputstream to the XML file to index.
+     * @return the LineXpathIndex for the XML file.
+     * @throws IOException when a IOException occurs during XML file access.
      */
     public static StandardXpathIndex buildIndex(InputStream is) throws IOException {
         return XmlXpathIndexer.buildIndex(is, null);
@@ -31,6 +33,8 @@ public class XmlXpathIndexer {
      * This method indexes the XML file accessible via the specified inputstream.
      * All xpaths that do not correspond to one of the xpaths included
      * in the xpath exclusion set will be ignored and therefore omitted from the index!
+     * Note: a value of 'null' is allowed for the aXpathInclusionSet parameter and will
+     * produce the same result as buildIndex(InputStream is).  
      *
      * @param is    inputstream to the XML file to index.
      * @param aXpathInclusionSet    Set with the String representation
@@ -41,15 +45,47 @@ public class XmlXpathIndexer {
      *                              in this list will <b>not</b> be added
      *                              to the index! Can be 'null' to ensure
      *                              inclusion of all xpaths.
+     * @return the LineXpathIndex for the XML file.
+     * @throws IOException when a IOException occurs during XML file access.
+     * @see this#buildIndex(java.io.InputStream) 
      */
     public static StandardXpathIndex buildIndex(InputStream is, Set<String> aXpathInclusionSet) throws IOException {
+        return buildIndex(is, aXpathInclusionSet, true);
+    }
+
+    /**
+     * This method indexes the XML file accessible via the specified inputstream.
+     * All xpaths that do not correspond to one of the xpaths included
+     * in the xpath exclusion set will be ignored and therefore omitted from the index!
+     * Note: a value of 'null' is allowed for the aXpathInclusionSet parameter and will
+     * produce the same result as buildIndex(InputStream is).
+     *
+     * @param is    inputstream to the XML file to index.
+     * @param aXpathInclusionSet    Set with the String representation
+     *                              of the xpaths to include in the index.
+     *                              <b>Note</b> that these xpaths should have
+     *                              their trailing '/' removed!
+     *                              <b>Also note</b> that any xpath not included
+     *                              in this list will <b>not</b> be added
+     *                              to the index! Can be 'null' to ensure
+     *                              inclusion of all xpaths.
+     * @param recordLineNumber boolean flag to swith line number recording on or off.
+     *                         If switched off, the created index will need less memory.
+     * @return the LineXpathIndex for the XML file.
+     * @throws IOException when a IOException occurs during XML file access.
+     * @see this#buildIndex(java.io.InputStream)
+     */
+    public static StandardXpathIndex buildIndex(InputStream is, Set<String> aXpathInclusionSet, boolean recordLineNumber) throws IOException {
         BufferedInputStream bis = new BufferedInputStream(is);
 
         CountingInputStream cis = new CountingInputStream( bis );
 
         StandardXpathIndex index = new StandardXpathIndex(aXpathInclusionSet);
 
-        Stack<XmlElement> stack = new Stack<XmlElement>();
+        // create a index that will or will not record the line number according to the specification
+        index.setRecordLineNumber(recordLineNumber);
+
+        Stack<TmpIndexElement> stack = new Stack<TmpIndexElement>();
         byte[] buf = new byte[1];
         byte read = ' ';
         byte oldRead;
@@ -60,9 +96,15 @@ public class XmlXpathIndexer {
         boolean startTag = false;
         ByteBuffer bb = new ByteBuffer();
 
+        long lineNum = 1; // initial line number (we start in the first line)
+
         while ( (nextByte(cis, buf)) != -1 ) {
             oldRead = read; // save previous byte
             read = buf[0];
+            // first keep track of all the line breaks, so we can count the line numbers
+            if (read == '\n') {lineNum++;}
+            if (oldRead == '\r' && read != '\n') {lineNum++;}
+            // now check for XML tags
             if ( read == '<' ) { // possible start tag
                 startPos = cis.getByteCount() -1; // we want the '<' included
                 oldRead = read; // save previous byte
@@ -88,16 +130,16 @@ public class XmlXpathIndexer {
                         String tagName = getTagName(bb);
                         bb.clear();
                         // since it is a self closing start tag, we can set the stop position already
-                        XmlElement element = createElement(tagName, startPos, stopPos);
+                        TmpIndexElement element = new TmpIndexElement(tagName, startPos, stopPos, lineNum);
                         stack.push(element);
                         String xpath = createPathFromStack(stack);
                         stack.pop();
-                        index.put(xpath, element.getRange());
+                         index.put(xpath, element.getStart(), element.getStop(), element.getLineNumber());
                     } else { // end of regular start tag
                         String tagName = getTagName(bb);
                         bb.clear();
                         // only set start, since we don't know yet where this element ends
-                        XmlElement element = createElement(tagName, startPos, -1L);
+                        TmpIndexElement element = new TmpIndexElement(tagName, startPos, -1L, lineNum);
                         stack.push(element);
                     }
                     recording = false;
@@ -110,14 +152,14 @@ public class XmlXpathIndexer {
                     recording = false;
                     closingTag = false;
                     String xpath = createPathFromStack(stack);
-                    XmlElement element = stack.pop();
+                    TmpIndexElement element = stack.pop();
                     // check if found name is the last on stack
                     if ( !element.getName().equalsIgnoreCase(tagName) ) {
                         System.out.println("ERROR: Tag name mismatch! Found '" + tagName +
                                            "' but '" + element.getName() + "' on stack|");
                     }
-                    element.getRange().setStop(stopPos);
-                    index.put(xpath, element.getRange());
+                    element.setStop(stopPos);
+                     index.put(xpath, element.getStart(), element.getStop(), element.getLineNumber());
                     // reset stopPos ?
                 }
             }
@@ -159,7 +201,6 @@ public class XmlXpathIndexer {
      * @return String of the tag name.
      */
     protected static String getTagName(ByteBuffer bb) {
-        // ToDo: find a more efficient way then using another buffer
         ByteBuffer bbTmp = new ByteBuffer();
         // get name (every byte till first blank)
         for (Byte aByte : bb) {
@@ -183,37 +224,50 @@ public class XmlXpathIndexer {
     }
 
     /**
-     * Convenience method to create a XmlElement.
-     * @param name name of the element (tag name).
-     * @param start start byte position of this tag in the XML file.
-     * @param stop stop byte position of this tag in the XML file.
-     * @return a new XmlElement with the specified values..
-     */
-    private static XmlElement createElement(String name, long start, long stop) {
-        ByteRange range = new ByteRange(start, stop);
-        // ToDo: check range? e.g. not bigger than file itself, stop > start, not negative, ...
-
-        XmlElement element = new XmlElement();
-        element.setName(name);
-        element.setRange(range);
-
-        return element;
-    }
-
-    /**
      * Creates a xpath of the element names on the stack.
      * @param stack the stack of XmlElements to create the xpath from.
      * @return a xpath expression representing the elements in the stack.
      */
-    private static String createPathFromStack(Stack<XmlElement> stack) {
+    private static String createPathFromStack(Stack<TmpIndexElement> stack) {
         StringBuilder path = new StringBuilder(100);
         path.append("/");
-        for (XmlElement element : stack) {
-            path.append(element.getName() + "/");
+        for (TmpIndexElement element : stack) {
+            path.append(element.getName()).append("/");
         }
         // Get rid of the trailing '/'.
-        return path.substring(0, path.length()-1); 
+        return path.substring(0, path.length()-1);
     }
 
+
+    public static void main(String[] args){
+        // test "carrage return" and "line feed" behaviour
+        System.out.println("1test\ntest");
+        System.out.println("1test\rtest");
+        System.out.println("1test\r\ntest");
+        System.out.println("2test\n\ntest");
+        System.out.println("2test\r\rtest");
+        System.out.println("2test\r\r\ntest");
+        System.out.println("3test\n\n\rtest");
+    }
+
+
+    /**
+     * Specialised convenience class only used within this indexer.
+     * Extends the IndexElement class with a String containing the
+     * name of the XML element (used to generate the xpath for the index)).
+     */
+    private static class TmpIndexElement extends LineNumberedByteRange {
+
+        private String name;
+
+        public TmpIndexElement(String name, long start, long stop, long lineNumber) {
+            this.setValues(start, stop, lineNumber);
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
 
 }

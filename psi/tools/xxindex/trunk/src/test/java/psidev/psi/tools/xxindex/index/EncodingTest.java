@@ -28,13 +28,13 @@ public class EncodingTest {
                 URL url = EncodingTest.class.getClassLoader().getResource(s);
                 InputStream is = url.openStream();
                 StandardXpathIndex index = XmlXpathIndexer.buildIndex(is);
-                ByteRange range = index.getRange("/first/second/third/fourth").get(1);
+                IndexElement range = index.getElements("/first/second/third/fourth").get(1);
 
                 StandardXmlElementExtractor xee = new StandardXmlElementExtractor();
                 xee.setEncoding(xee.detectFileEncoding(url));
                 System.out.println("Specifying encoding: " + xee.getEncoding().name());
                 xee.setCompareWithDetect(true);
-                String test = xee.readByteRange(range.getStart(), range.getStop(), new File(url.toURI()));
+                String test = xee.readString(range.getStart(), range.getStop(), new File(url.toURI()));
                 Assert.assertTrue("The String retrieved from the byte offset (" + range.getStart() + "-" + range.getStop() + ") did not start with the expected '<fourth>' element!", test.startsWith("<fourth>"));
                 Assert.assertTrue("The String retrieved from the byte offset (" + range.getStart() + "-" + range.getStop() + ") did not end with the expected '</fourth>' element!", test.endsWith("</fourth>"));
 
