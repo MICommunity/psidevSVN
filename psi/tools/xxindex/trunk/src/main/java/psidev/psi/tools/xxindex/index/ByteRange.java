@@ -49,6 +49,9 @@ public class ByteRange implements IndexElement {
         // this ByteRange does not record the line number
     }
 
+    public boolean hasLineNumber() {
+        return false;
+    }
 
     public String toString() {
         return "ByteRange{" +

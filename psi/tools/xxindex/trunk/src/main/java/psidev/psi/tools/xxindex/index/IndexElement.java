@@ -7,6 +7,8 @@ package psidev.psi.tools.xxindex.index;
  */
 public interface IndexElement {
 
+    public static final long NO_LINE_NUMBER = -1;
+
     public void setValues(long start, long stop, long lineNumber);
 
     public long getStart();
@@ -16,6 +18,8 @@ public interface IndexElement {
     public void setStop(long stop);
 
     public long getLineNumber();
-    public void setLineNumber(long lineNumber);
+    public void setLineNumber( long lineNumber);
+
+    public boolean hasLineNumber();
 
 }

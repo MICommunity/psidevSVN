@@ -14,7 +14,7 @@ import java.io.FileInputStream;
 public class StandardXpathAccess implements XpathAccess {
 
     private File file;
-    private StandardXpathIndex index;
+    private XpathIndex index;
     private XmlElementExtractor extractor;
 
 

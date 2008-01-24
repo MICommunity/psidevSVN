@@ -238,19 +238,6 @@ public class XmlXpathIndexer {
         return path.substring(0, path.length()-1);
     }
 
-
-    public static void main(String[] args){
-        // test "carrage return" and "line feed" behaviour
-        System.out.println("1test\ntest");
-        System.out.println("1test\rtest");
-        System.out.println("1test\r\ntest");
-        System.out.println("2test\n\ntest");
-        System.out.println("2test\r\rtest");
-        System.out.println("2test\r\r\ntest");
-        System.out.println("3test\n\n\rtest");
-    }
-
-
     /**
      * Specialised convenience class only used within this indexer.
      * Extends the IndexElement class with a String containing the

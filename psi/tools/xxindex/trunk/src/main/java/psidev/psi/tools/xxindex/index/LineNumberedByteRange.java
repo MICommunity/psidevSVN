@@ -12,7 +12,7 @@ public class LineNumberedByteRange extends ByteRange implements IndexElement {
     public LineNumberedByteRange() {
         this.setStart(-1);
         this.setStop(-1);
-        this.lineNumber = -1;
+        this.lineNumber = IndexElement.NO_LINE_NUMBER;
     }
 
     public LineNumberedByteRange(long start, long stop, long lineNumber) {
@@ -34,6 +34,9 @@ public class LineNumberedByteRange extends ByteRange implements IndexElement {
         this.lineNumber = lineNumber;
     }
 
+    public boolean hasLineNumber() {
+        return (lineNumber != IndexElement.NO_LINE_NUMBER);
+    }
 
     public String toString() {
         return "ByteRange{" +
