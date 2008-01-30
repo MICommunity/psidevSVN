@@ -21,6 +21,9 @@
     <!-- Additions Florian -->
 
     <build>
+        <!-- Additions Florian -->
+        <finalName>mzMLValidator</finalName>
+
         <plugins>
             <!-- To compile with JDK5.0 -->
             <plugin>
@@ -31,10 +34,6 @@
                     <target>1.5</target>
                 </configuration>
             </plugin>
-
-
-            <!-- Additions Florian -->
-            <finalName>mzMLValidator</finalName>
 
             <plugin>
                <groupId>org.apache.maven.plugins</groupId>
@@ -55,6 +54,7 @@
                  </execution>
                </executions>
             </plugin>
+            <!-- to create a executable jar to start the MzMLValidatorGUI -->
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-jar-plugin</artifactId>
@@ -131,7 +131,7 @@
         <dependency>
             <groupId>psidev.psi.tools</groupId>
             <artifactId>xxindex</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>0.3</version>
         </dependency>
     </dependencies>
 

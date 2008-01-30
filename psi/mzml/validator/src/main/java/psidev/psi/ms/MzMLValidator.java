@@ -182,7 +182,10 @@ public class MzMLValidator extends Validator {
             xpathInclusionSet.add("/indexedmzML/mzML/run/spectrumList/spectrum");
 
             // In getting here we should be ready to create an index.
-            XpathAccess xml = new StandardXpathAccess(mzMLFile, xpathInclusionSet);
+            // the index created here will not record the line numbers of the XML start tags
+            XpathAccess xml = new StandardXpathAccess(mzMLFile, xpathInclusionSet, false);
+            // use the following line instead, if you want line number recoding
+            // XpathAccess xml = new StandardXpathAccess(mzMLFile, xpathInclusionSet);
 
             // Now get a dom parser for these elements.
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -225,7 +228,7 @@ public class MzMLValidator extends Validator {
                 aParent.setProgress(4, "Validating " + xpath + "...");
             }
             Collection tovalidate = new ArrayList();
-            Collection xmlStrings = xml.getXmlElements(xpath);
+            Collection xmlStrings = xml.getXmlSnippets(xpath);
             for (Iterator lIterator = xmlStrings.iterator(); lIterator.hasNext();) {
                 String s = (String)lIterator.next();
                 tovalidate.add(new ReferenceableParamGroupListType(s));
@@ -239,7 +242,7 @@ public class MzMLValidator extends Validator {
                 aParent.setProgress(6, "Validating " + xpath + "...");
             }
             tovalidate = new ArrayList();
-            xmlStrings = xml.getXmlElements(xpath);
+            xmlStrings = xml.getXmlSnippets(xpath);
             for (Iterator lIterator = xmlStrings.iterator(); lIterator.hasNext();) {
                 String s = (String)lIterator.next();
                 tovalidate.add(new CVListType(s));
@@ -253,7 +256,7 @@ public class MzMLValidator extends Validator {
                 aParent.setProgress(5, "Validating " + xpath + "...");
             }
             tovalidate = new ArrayList();
-            xmlStrings = xml.getXmlElements(xpath);
+            xmlStrings = xml.getXmlSnippets(xpath);
             for (Iterator lIterator = xmlStrings.iterator(); lIterator.hasNext();) {
                 String s = (String)lIterator.next();
                 tovalidate.add(new FileDescriptionType(s));
@@ -267,7 +270,7 @@ public class MzMLValidator extends Validator {
                 aParent.setProgress(7, "Validating " + xpath + "...");
             }
             tovalidate = new ArrayList();
-            xmlStrings = xml.getXmlElements(xpath);
+            xmlStrings = xml.getXmlSnippets(xpath);
             for (Iterator lIterator = xmlStrings.iterator(); lIterator.hasNext();) {
                 String s = (String)lIterator.next();
                 tovalidate.add(new SampleListType(s));
@@ -281,7 +284,7 @@ public class MzMLValidator extends Validator {
                 aParent.setProgress(8, "Validating " + xpath + "...");
             }
             tovalidate = new ArrayList();
-            xmlStrings = xml.getXmlElements(xpath);
+            xmlStrings = xml.getXmlSnippets(xpath);
             for (Iterator lIterator = xmlStrings.iterator(); lIterator.hasNext();) {
                 String s = (String)lIterator.next();
                 tovalidate.add(new InstrumentListType(s));
@@ -295,7 +298,7 @@ public class MzMLValidator extends Validator {
                 aParent.setProgress(9, "Validating " + xpath + "...");
             }
             tovalidate = new ArrayList();
-            xmlStrings = xml.getXmlElements(xpath);
+            xmlStrings = xml.getXmlSnippets(xpath);
             for (Iterator lIterator = xmlStrings.iterator(); lIterator.hasNext();) {
                 String s = (String)lIterator.next();
                 tovalidate.add(new SoftwareListType.Software(s));
@@ -306,7 +309,7 @@ public class MzMLValidator extends Validator {
             // -------------------- Validate the data processing list. -------------------- //
             xpath = root + "/dataProcessingList";
             tovalidate = new ArrayList();
-            xmlStrings = xml.getXmlElements(xpath);
+            xmlStrings = xml.getXmlSnippets(xpath);
             for (Iterator lIterator = xmlStrings.iterator(); lIterator.hasNext();) {
                 String s = (String)lIterator.next();
                 tovalidate.add(new DataProcessingListType(s));
@@ -320,7 +323,7 @@ public class MzMLValidator extends Validator {
                 aParent.setProgress(10, "Validating " + xpath + "...");
             }
             tovalidate = new ArrayList();
-            xmlStrings = xml.getXmlElements(xpath);
+            xmlStrings = xml.getXmlSnippets(xpath);
             for (Iterator lIterator = xmlStrings.iterator(); lIterator.hasNext();) {
                 String s = (String)lIterator.next();
                 tovalidate.add(new CVParamType(s));
@@ -333,7 +336,7 @@ public class MzMLValidator extends Validator {
             if(aParent != null) {
                 aParent.setProgress(11, "Validating " + xpath + " (this might take a while)...");
             }
-            Iterator lIterator = xml.getXmlElementIterator(xpath);
+            Iterator lIterator = xml.getXmlSnippetIterator(xpath);
 
             // Create lock.
             InnerLock lock =  new InnerLock();
