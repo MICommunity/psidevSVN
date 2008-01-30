@@ -20,5 +20,7 @@ public interface XpathIndex {
 
     boolean containsXpath(String xpath);
 
+    boolean isRecordLineNumber();
+
     String print();
 }
