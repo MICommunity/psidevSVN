@@ -137,7 +137,6 @@ public class StandardXmlElementExtractor implements XmlElementExtractor {
      * @param to byte position of the end (incl. end of closing tag) of the XML element.
      * @param file the file containing the XML element.
      * @return the XML element including start and stop tag in a String.
-//     * @throws IOException if an I/O error occurs while reading.
      */
     public String readString(long from, long to, File file) throws IOException {
         // retrieve the bytes from the given range in the file
@@ -209,7 +208,6 @@ public class StandardXmlElementExtractor implements XmlElementExtractor {
      * detected encoding if 'preferDetect' is enabled. If no encoding was set, the system default is used.
      * @param bytes the byte array to convert.
      * @return the String representation of the byte array.
-//     * @throws UnsupportedEncodingException if the conversion could not be done with the given encoding.
      */
     public String bytes2String(byte[] bytes) {
         Charset detectedEnc = null;
@@ -289,9 +287,9 @@ public class StandardXmlElementExtractor implements XmlElementExtractor {
      */
     public String detectFileEncoding(URL fileLocation) throws IOException {
         CodepageDetectorProxy detector = CodepageDetectorProxy.getInstance(); // A singleton.
-        detector.add(new ParsingDetector(false)); // be verbose about parsing.
+        detector.add(new ParsingDetector(false));   // be verbose about parsing.
         detector.add(JChardetFacade.getInstance()); // Another singleton.
-        detector.add(ASCIIDetector.getInstance()); // Fallback, see javadoc.
+        detector.add(ASCIIDetector.getInstance());  // Fallback, see javadoc.
 
         java.nio.charset.Charset charset = detector.detectCodepage(fileLocation);
 
@@ -325,5 +323,4 @@ public class StandardXmlElementExtractor implements XmlElementExtractor {
         }
         return charsetName;
     }
-
 }

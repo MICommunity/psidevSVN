@@ -1,29 +1,30 @@
 package psidev.psi.tools.xxindex.index;
 
 /**
- * Author: florian
+ * Holds the information about a potision in a sequence of bytes.
+ *
+ * @author florian
+ * @author Samuel Kerrien (skerrien@ebi.ac.uk)
  * Date: 18-Jan-2008
- * Time: 13:42:54
+ * @since 0.3
  */
 public class ByteRange implements IndexElement {
 
-    private long start;
-    private long stop;
+    private long start = -1;
+    private long stop = -1;
 
     public ByteRange() {
-        this.start = -1;
-        this.stop = -1;
     }
 
     public ByteRange(long start, long stop, long lineNumber) {
-        this.start = start;
-        this.stop = stop;
+        setStart( start );
+        setStop( stop );
         // this ByteRange does not record the line number
     }
 
     public void setValues(long start, long stop, long lineNumber) {
-        this.start = start;
-        this.stop = stop;
+        setStart( start );
+        setStop( stop );
         // this ByteRange does not record the line number
     }
 
@@ -31,6 +32,9 @@ public class ByteRange implements IndexElement {
         return start;
     }
     public void setStart(long start) {
+//        if( start < 0 ) {
+//            throw new IllegalArgumentException( "You must give a positive start: " + start );
+//        }
         this.start = start;
     }
 
@@ -38,12 +42,15 @@ public class ByteRange implements IndexElement {
         return stop;
     }
     public void setStop(long stop) {
+//        if( stop < 0 ) {
+//            throw new IllegalArgumentException( "You must give a positive stop: " + stop );
+//        }
         this.stop = stop;
     }
 
     public long getLineNumber() {
         // return default value -1, since we don't record the line number
-        return -1;
+        return NO_LINE_NUMBER;
     }
     public void setLineNumber(long lineNumber) {
         // this ByteRange does not record the line number
