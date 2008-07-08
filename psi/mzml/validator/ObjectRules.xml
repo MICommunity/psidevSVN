@@ -1,7 +1,5 @@
-<config>
+<objectRuleList xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://www.psidev.info/files/validator/object-rule.xsd">
     <!-- List of rules that this specific validator should use -->
-    <rules>
-	    <!-- <rule>uk.ac.ebi.enfin.core.validator.extension.rules.MoleculeRule1</rule> -->
-	    <!-- <rule>uk.ac.ebi.enfin.core.validator.extension.rules.ExampleRule1</rule> -->
-    </rules>
-</config>
+    <rule class=""/>
+</objectRuleList>
