@@ -5,8 +5,11 @@ import org.apache.commons.io.input.CountingInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.util.Set;
 import java.util.Stack;
+import java.util.Iterator;
+import java.util.ListIterator;
 
 /**
  * Author: Florian Reisinger
@@ -94,6 +97,7 @@ public class XmlXpathIndexer {
         boolean recording = false;
         boolean closingTag = false;
         boolean startTag = false;
+        boolean inQuote = false;
         ByteBuffer bb = new ByteBuffer();
 
         long lineNum = 1; // initial line number (we start in the first line)
@@ -101,11 +105,12 @@ public class XmlXpathIndexer {
         while ( (nextByte(cis, buf)) != -1 ) {
             oldRead = read; // save previous byte
             read = buf[0];
+            String xx = new String(buf);
             // first keep track of all the line breaks, so we can count the line numbers
             if (read == '\n') {lineNum++;}
             if (oldRead == '\r' && read != '\n') {lineNum++;}
             // now check for XML tags
-            if ( read == '<' ) { // possible start tag
+            if ( read == '<' && !inQuote ) { // possible start tag
                 startPos = cis.getByteCount() -1; // we want the '<' included
                 oldRead = read; // save previous byte
                 nextByte(cis, buf);
@@ -123,7 +128,14 @@ public class XmlXpathIndexer {
                     recording = true;
                 }
             }
-            if ( read == '>' ) {
+            if (read == '"' && recording) {
+                if (inQuote) {
+                    inQuote = false;
+                } else {
+                    inQuote = true;
+                }
+            }
+            if ( read == '>' && !inQuote ) {
                 stopPos = cis.getByteCount();
                 if ( startTag ) { // end of start tag
                     if ( oldRead == '/' ) { // self closing start tag
@@ -155,8 +167,22 @@ public class XmlXpathIndexer {
                     TmpIndexElement element = stack.pop();
                     // check if found name is the last on stack
                     if ( !element.getName().equalsIgnoreCase(tagName) ) {
+                        //ToDo: change to throw Exception, if this goes wrong, the index will be incorrect !!
                         System.out.println("ERROR: Tag name mismatch! Found '" + tagName +
-                                           "' but '" + element.getName() + "' on stack|");
+                                "' but '" + element.getName() + "' on stack!" +
+                                " Stack: ");
+                        StringBuilder sb = new StringBuilder();
+                        ListIterator<TmpIndexElement> iter = stack.listIterator();
+                        while (iter.hasNext()) {
+                            TmpIndexElement tmpIndexElement =  iter.next();
+                            sb.append("[");
+                            sb.append(tmpIndexElement.getName());
+                            sb.append(" at line ");
+                            sb.append(tmpIndexElement.getLineNumber());
+                            sb.append("]");
+                        }
+                        System.out.println(sb.toString());
+                        throw new IllegalStateException("Internal stack of XML tags was corrupted!");
                     }
                     element.setStop(stopPos);
                      index.put(xpath, element.getStart(), element.getStop(), element.getLineNumber());
@@ -257,4 +283,17 @@ public class XmlXpathIndexer {
         }
     }
 
+
+    public static void main(String[] args) throws IOException {
+
+//        String filename = "C:\\Documents and Settings\\florian\\Desktop\\F003909_PRIDEwithSpectraAndIdentifiations.xml";
+        String filename = "C:\\Documents and Settings\\florian\\Desktop\\Test.xml";
+        XpathIndex index = XmlXpathIndexer.buildIndex( new FileInputStream( filename ), null, true );
+        System.out.println(" index build.");
+
+        for (String element : index.getKeys()) {
+            System.out.println("index element: " + element);
+        }
+
+    }
 }
