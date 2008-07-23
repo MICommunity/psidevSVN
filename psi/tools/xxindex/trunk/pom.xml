@@ -11,14 +11,14 @@
     <groupId>psidev.psi.tools</groupId>
     <artifactId>xxindex</artifactId>
     <packaging>jar</packaging>
-    <version>0.3</version>
+    <version>0.4-SNAPSHOT</version>
 
     <name>PSI :: Tools :: Xml XPath Indexer</name>
 
     <scm>
-        <connection>scm:svn:https://psidev.svn.sourceforge.net/svnroot/psidev/psi/tools/xxindex/tags/xxindex-0.3</connection>
-        <developerConnection>scm:svn:https://psidev.svn.sourceforge.net/svnroot/psidev/psi/tools/xxindex/tags/xxindex-0.3</developerConnection>
-        <url>https://psidev.svn.sourceforge.net/svnroot/psidev/psi/tools/xxindex/tags/xxindex-0.3</url>
+        <connection>scm:svn:https://psidev.svn.sourceforge.net/svnroot/psidev/psi/tools/xxindex/trunk</connection>
+        <developerConnection>scm:svn:https://psidev.svn.sourceforge.net/svnroot/psidev/psi/tools/xxindex/trunk</developerConnection>
+        <url>https://psidev.svn.sourceforge.net/svnroot/psidev/psi/tools/xxindex/trunk</url>
     </scm>
 
     <build>
