@@ -1,21 +1,28 @@
 package psidev.psi.tools.xxindex.index;
 
 import org.apache.commons.io.input.CountingInputStream;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-import java.io.InputStream;
-import java.io.IOException;
 import java.io.BufferedInputStream;
-import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ListIterator;
 import java.util.Set;
 import java.util.Stack;
-import java.util.Iterator;
-import java.util.ListIterator;
 
 /**
- * Author: Florian Reisinger
+ * Indexes XML data so we know the begin and end position of specific elements. 
+ *
+ * @author Samuel Kerrien (skerrien@ebi.ac.uk)
+ * @author Florian Reisinger
+ *
+ * @since 0.3
  * Date: 11-Jan-2008
  */
 public class XmlXpathIndexer {
+
+    private static final Log log = LogFactory.getLog( XmlXpathIndexer.class );
 
     ////////////////////
     // Index methods
@@ -168,20 +175,19 @@ public class XmlXpathIndexer {
                     // check if found name is the last on stack
                     if ( !element.getName().equalsIgnoreCase(tagName) ) {
                         //ToDo: change to throw Exception, if this goes wrong, the index will be incorrect !!
-                        System.out.println("ERROR: Tag name mismatch! Found '" + tagName +
-                                "' but '" + element.getName() + "' on stack!" +
-                                " Stack: ");
-                        StringBuilder sb = new StringBuilder();
+                        StringBuilder sb = new StringBuilder( 256 );
+                        sb.append( "Tag name mismatch! Found '" + tagName + "' but '" + element.getName() + "' on stack." );
+                        sb.append( "\n State of the Stack:\n" );
                         ListIterator<TmpIndexElement> iter = stack.listIterator();
                         while (iter.hasNext()) {
-                            TmpIndexElement tmpIndexElement =  iter.next();
+                            TmpIndexElement tmpIndexElement = iter.next();
                             sb.append("[");
                             sb.append(tmpIndexElement.getName());
                             sb.append(" at line ");
                             sb.append(tmpIndexElement.getLineNumber());
-                            sb.append("]");
+                            sb.append("]\n");
                         }
-                        System.out.println(sb.toString());
+                        log.error( sb.toString() );
                         throw new IllegalStateException("Internal stack of XML tags was corrupted!");
                     }
                     element.setStop(stopPos);
@@ -210,9 +216,6 @@ public class XmlXpathIndexer {
      * @throws IOException if an I/O error occurs.
      */
     private static int nextByte(CountingInputStream cis, byte[] buf) throws IOException {
-//        if (buf.length != 1) {
-//            throw new IllegalArgumentException("The byte array needs to be of length 1 !");
-//        }
         int result = cis.read(buf);
         while (result != -1 && buf[0] == 0 ){
             result = cis.read(buf);
@@ -281,19 +284,5 @@ public class XmlXpathIndexer {
         public String getName() {
             return name;
         }
-    }
-
-
-    public static void main(String[] args) throws IOException {
-
-//        String filename = "C:\\Documents and Settings\\florian\\Desktop\\F003909_PRIDEwithSpectraAndIdentifiations.xml";
-        String filename = "C:\\Documents and Settings\\florian\\Desktop\\Test.xml";
-        XpathIndex index = XmlXpathIndexer.buildIndex( new FileInputStream( filename ), null, true );
-        System.out.println(" index build.");
-
-        for (String element : index.getKeys()) {
-            System.out.println("index element: " + element);
-        }
-
     }
 }

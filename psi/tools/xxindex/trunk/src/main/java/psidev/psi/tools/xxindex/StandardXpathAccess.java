@@ -10,11 +10,16 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * Author: Florian Reisinger
  * Date: 14-Jan-2008
  */
 public class StandardXpathAccess implements XpathAccess {
+
+    private static final Log log = LogFactory.getLog( StandardXpathAccess.class );
 
     private File file;
     private XpathIndex index;
@@ -134,7 +139,7 @@ public class StandardXpathAccess implements XpathAccess {
             }
         } else {
             // Error message
-            System.out.println( "ERROR: the index does not contain any entry for the requested xpath: " + xpath );
+            log.error( "The index does not contain any entry for the requested xpath: " + xpath );
         }
         return results;
     }
@@ -170,8 +175,7 @@ public class StandardXpathAccess implements XpathAccess {
 
             iter = new XmlSnippetIterator( ranges, extractor, file, start, stop );
         } else {
-            // Error message
-            System.out.println( "ERROR: the index does not contain any entry for the requested xpath: " + xpath );
+            log.error( "The index does not contain any entry for the requested xpath: " + xpath );
             // return iterator over empty list
             List<String> s = Collections.emptyList();
             iter = s.iterator();
@@ -295,7 +299,7 @@ public class StandardXpathAccess implements XpathAccess {
             }
         } else {
             // Error message
-            System.out.println( "ERROR: the index does not contain any entry for the requested xpath: " + xpath );
+            log.error( "The index does not contain any entry for the requested xpath: " + xpath );
         }
         return results;
     }
@@ -333,7 +337,7 @@ public class StandardXpathAccess implements XpathAccess {
             iter = new XmlElementIterator( elements, extractor, file, start, stop );
         } else {
             // Error message
-            System.out.println( "ERROR: the index does not contain any entry for the requested xpath: " + xpath );
+            log.error( "The index does not contain any entry for the requested xpath: " + xpath );
             // return iterator over empty list
             List<XmlElement> s = Collections.emptyList();
             iter = s.iterator();

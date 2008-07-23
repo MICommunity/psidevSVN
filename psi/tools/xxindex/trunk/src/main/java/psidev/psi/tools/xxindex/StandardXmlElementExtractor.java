@@ -13,11 +13,16 @@ import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * Author: Florian Reisinger
  * Date: 24-Jul-2007
  */
 public class StandardXmlElementExtractor implements XmlElementExtractor {
+
+    private static final Log log = LogFactory.getLog( StandardXmlElementExtractor.class );
 
     private boolean compareWithDetect;
     private boolean preferDetect;
@@ -104,10 +109,10 @@ public class StandardXmlElementExtractor implements XmlElementExtractor {
             this.encoding = Charset.forName(encoding);
             result = 0;
         } catch (IllegalCharsetNameException icne) {
-            System.out.println("Illegal encoding.");
+            log.error("Illegal encoding: " + encoding, icne);
             result = -1;
         } catch (UnsupportedCharsetException ucne) {
-            System.out.println("Unsupported encoding.");
+            log.error("Unsupported encoding: " + encoding, ucne);
             result = -2;
         }
         return result;
@@ -217,8 +222,10 @@ public class StandardXmlElementExtractor implements XmlElementExtractor {
                 // if not the same name, check the aliases of the Charset
                 Set<String> aliases = detectedEnc.aliases();
                 if ( !aliases.contains(encoding.name()) ) {
-                    System.out.println("WARNING: specified encoding is not the same as the detected one. " +
-                            "Specified: " + encoding.name() + " detected: " + detectedEnc.name());
+                    if ( log.isWarnEnabled() ) {
+                        log.warn("WARNING: specified encoding is not the same as the detected one. " +
+                                 "Specified: " + encoding.name() + " detected: " + detectedEnc.name());
+                    }
                 }
             }
         }
@@ -229,21 +236,19 @@ public class StandardXmlElementExtractor implements XmlElementExtractor {
             } else {
                 encoding = detectEncoding(bytes);
             }
-            System.out.println("Using detected encoding: " + encoding.name());
+            if ( log.isDebugEnabled() ) log.info( "Using detected encoding: " + encoding.name());
         }
 
         String result = null;
         if (encoding == null) {
-            System.out.println("Using system default for encoding.");
+            if ( log.isDebugEnabled() ) log.info("Using system default for encoding.");
             result = new String(bytes);
         } else {
-            //System.out.println("Using encoding: " + encoding.name());
             try {
                 result = new String(bytes, encoding.name());
             } catch (UnsupportedEncodingException e) {
-                System.out.println("Specified encoding '" + encoding.name() + "' is not supported");
+                log.error("Specified encoding '" + encoding.name() + "' is not supported", e);
                 // ToDo: throw new Exception
-                e.printStackTrace();
             }
         }
         return result;
@@ -264,8 +269,7 @@ public class StandardXmlElementExtractor implements XmlElementExtractor {
         try {
             charset = detector.detectCodepage(new ByteArrayInputStream(bytes), bytes.length);
         } catch (IOException e) {
-            System.out.println("IOException trying to detect codepage from byte array.");
-            e.printStackTrace();
+            log.error("IOException trying to detect codepage from byte array, setting charset to default", e);
             charset = Charset.defaultCharset();
         }
 
