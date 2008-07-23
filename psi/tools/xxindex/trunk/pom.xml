@@ -1,6 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -13,15 +11,14 @@
     <groupId>psidev.psi.tools</groupId>
     <artifactId>xxindex</artifactId>
     <packaging>jar</packaging>
-    <version>0.3-SNAPSHOT</version>
+    <version>0.3</version>
 
     <name>PSI :: Tools :: Xml XPath Indexer</name>
 
     <scm>
-        <connection>scm:svn:https://psidev.svn.sourceforge.net/svnroot/psidev/psi/tools/xxindex/trunk</connection>
-        <developerConnection>scm:svn:https://psidev.svn.sourceforge.net/svnroot/psidev/psi/tools/xxindex/trunk
-        </developerConnection>
-        <url>https://psidev.svn.sourceforge.net/svnroot/psidev/psi/tools/xxindex/trunk</url>
+        <connection>scm:svn:https://psidev.svn.sourceforge.net/svnroot/psidev/psi/tools/xxindex/tags/xxindex-0.3</connection>
+        <developerConnection>scm:svn:https://psidev.svn.sourceforge.net/svnroot/psidev/psi/tools/xxindex/tags/xxindex-0.3</developerConnection>
+        <url>https://psidev.svn.sourceforge.net/svnroot/psidev/psi/tools/xxindex/tags/xxindex-0.3</url>
     </scm>
 
     <build>
