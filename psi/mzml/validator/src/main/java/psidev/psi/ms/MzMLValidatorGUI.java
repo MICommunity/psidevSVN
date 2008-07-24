@@ -9,6 +9,7 @@ package psidev.psi.ms;
 import psidev.psi.ms.swingworker.SwingWorker;
 import psidev.psi.tools.validator.MessageLevel;
 import psidev.psi.tools.validator.ValidatorMessage;
+import psidev.psi.tools.validator.util.ValidatorReport;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -20,7 +21,6 @@ import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.text.SimpleDateFormat;
 /*
  * CVS information:
  *
@@ -322,11 +322,13 @@ public class MzMLValidatorGUI extends JPanel {
                         InputStream cvMapping = new FileInputStream("ms-mapping.xml");
                         InputStream codedRules = new FileInputStream("ObjectRules.xml");
                         validator = new MzMLValidator(ontology, cvMapping, codedRules);
+                        validator.setValidatorGUI( MzMLValidatorGUI.this );
+                        validator.setMessageReportLevel( getLevel() );
                         ontology.close();
                         cvMapping.close();
                         codedRules.close();
                     }
-                    messages.addAll(validator.startValidation(inputFile, getLevel(), MzMLValidatorGUI.this));
+                    messages.addAll( validator.startValidation(inputFile) );
                 } catch(Exception e) {
                     MzMLValidatorGUI.this.notifyOfError(e);
                 }
@@ -363,7 +365,8 @@ public class MzMLValidatorGUI extends JPanel {
         long delta = System.currentTimeMillis() - runStartTime;
         // Reset run start time and moment.
         runStartTime = -1;
-        progress.setString(DEFAULT_PROGRESS_MESSAGE + " (last run took " + (delta/1000) + " seconds)");
+//        progress.setString(DEFAULT_PROGRESS_MESSAGE + " (last run took " + (delta/1000) + " seconds)");
+        progress.setString(DEFAULT_PROGRESS_MESSAGE + " (last run took " + delta + " milliseconds)");
         // Re-enable GUI.
         txtInputFile.setEnabled(true);
         btnBrowse.setEnabled(true);
@@ -371,6 +374,17 @@ public class MzMLValidatorGUI extends JPanel {
         rbtInfo.setEnabled(true);
         rbtWarn.setEnabled(true);
         rbtError.setEnabled(true);
+
+
+
+        ValidatorReport report = validator.getReport();
+        StringBuilder sb = new StringBuilder();
+        sb.append("CvMappingRule totat count: ").append(validator.getCvRuleManager().getCvRules().size()).append("\n");
+        sb.append("CvMappingRules not run: ").append(report.getCvRulesNotChecked().size()).append("\n");
+        sb.append("CvMappingRules with invalid Xpath: ").append(report.getCvRulesInvalidXpath().size()).append("\n");
+        sb.append("CvMappingRules with valid Xpath, but no hit: ").append(report.getCvRulesValidXpath().size()).append("\n");
+        sb.append("CvMappingRules run & valid: ").append(report.getCvRulesValid().size()).append("\n");
+        JOptionPane.showMessageDialog(this, sb.toString(), "CvMappingRule Report", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void showMessages(Collection<ValidatorMessage> aMessages) {
