@@ -211,6 +211,10 @@ public class MzMLValidator extends Validator {
      * @return  Collection with validator messages.
      */
     public Collection<ValidatorMessage> startValidation(File mzMLFile) {
+        // reset old validation results
+        // this will currently reset the status of all CvRules to a "not run" status
+        super.resetCvRuleStatus();
+
         // We create an MzMLUnmarshaller (this specialised Unmarshaller will internally use a XML index
         // to marshal the mzML file in snippets given by their Xpath)
         this.unmarshaller = new MzMLUnmarshaller(mzMLFile);
@@ -255,8 +259,6 @@ public class MzMLValidator extends Validator {
 
             // xpath expression (defining the current XML elements)
             String xpath;
-            // the collection of objects that are to be validated
-            Collection<MzMLObject> tovalidate = new ArrayList<MzMLObject>();
             // iterator to provide MzMLObjects
             MzMLObjectIterator<MzMLObject> mzMLIter;
 
@@ -308,7 +310,7 @@ public class MzMLValidator extends Validator {
             // Wait for it.
             lock.isDone(runners.size());
             // now we add all the collected messages from the spectra validators to the general message list
-           addMessages(sync_msgs, MessageLevel.WARN);
+           addMessages(sync_msgs, this.msgL);
             if(this.gui != null) {
                 this.gui.setProgress(++progress, "Validation complete, compiling output...");
             }
@@ -435,8 +437,8 @@ public class MzMLValidator extends Validator {
     private static void printMessages(Collection aMessages) {
         if(aMessages.size() != 0) {
             System.out.println("\n\nThe following messages were obtained during the validation of your XML file:\n");
-            for (Iterator lIterator = aMessages.iterator(); lIterator.hasNext();) {
-                ValidatorMessage lMessage = (ValidatorMessage)lIterator.next();
+            for (Object aMessage : aMessages) {
+                ValidatorMessage lMessage = (ValidatorMessage) aMessage;
                 System.out.println(" * " + lMessage + "\n");
             }
         } else {
@@ -445,10 +447,9 @@ public class MzMLValidator extends Validator {
     }
 
     private void addMessages(Collection<ValidatorMessage> aNewMessages, MessageLevel aLevel) {
-        for (Iterator validatorMessageIterator = aNewMessages.iterator(); validatorMessageIterator.hasNext();) {
-            ValidatorMessage validatorMessage = (ValidatorMessage) validatorMessageIterator.next();
-            if(validatorMessage.getLevel().isHigher(aLevel) || validatorMessage.getLevel().isSame(aLevel)) {
-                this.msgs.add(validatorMessage);
+        for (ValidatorMessage aNewMessage : aNewMessages) {
+            if (aNewMessage.getLevel().isHigher(aLevel) || aNewMessage.getLevel().isSame(aLevel)) {
+                this.msgs.add(aNewMessage);
             }
         }
     }
@@ -469,5 +470,23 @@ public class MzMLValidator extends Validator {
         }
 
         return result;
+    }
+
+    /**
+     * Method to reset all the fields in this validator.
+     */
+    protected void reset() {
+        // reset the collection of ValidatorMessages
+        if ( this.msgs != null ) {
+            this.msgs.clear();
+        }
+        // reset the GUI
+        this.gui = null;
+        // reset the message reporting level to the default
+        this.msgL = MessageLevel.WARN;
+        // reset the unmarshaller
+        this.unmarshaller = null;
+        // reset the progress counter
+        this.progress = 0;
     }
 }

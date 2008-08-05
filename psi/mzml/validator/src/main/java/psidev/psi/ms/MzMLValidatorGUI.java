@@ -303,6 +303,8 @@ public class MzMLValidatorGUI extends JPanel {
                 progress.setString("Initializing validator...");
                 MzMLValidatorGUI.this.runStartTime = System.currentTimeMillis();
                 try {
+                    // Lazy cached validator.
+                    if(validator == null) {
                     InputStream ontology = new FileInputStream("ontologies.xml");
                     InputStream cvMapping = new FileInputStream("ms-mapping.xml");
                     InputStream codedRules = new FileInputStream("ObjectRules.xml");
@@ -312,6 +314,13 @@ public class MzMLValidatorGUI extends JPanel {
                     ontology.close();
                     cvMapping.close();
                     codedRules.close();
+                    } else {
+                        // reset all validator fields except the initialisation values (ontologies, object rules and cv mapping rules)
+                        validator.reset();
+                        // set again the gui and reporting level
+                        validator.setValidatorGUI( MzMLValidatorGUI.this );
+                        validator.setMessageReportLevel( getLevel() );
+                    }
                     messages.addAll( validator.startValidation(inputFile) );
                 } catch(Exception e) {
                     MzMLValidatorGUI.this.notifyOfError(e);
@@ -374,13 +383,13 @@ public class MzMLValidatorGUI extends JPanel {
     private void showMessages(Collection<ValidatorMessage> aMessages) {
         StringBuffer sb = new StringBuffer("\n\nThe following messages were obtained during the validation of your XML file:\n\n\n");
         int count = 0;
-        for (Iterator lIterator = aMessages.iterator(); lIterator.hasNext();) {
+        for (Object aMessage : aMessages) {
             count++;
-            ValidatorMessage lMessage = (ValidatorMessage)lIterator.next();
-            sb.append("\n\nMessage " + count + ":\n");
-            sb.append("    Level: " + lMessage.getLevel() + "\n");
-            sb.append("    Context: " + lMessage.getContext() + "\n");
-            sb.append("     --> " + lMessage.getMessage() + "\n");
+            ValidatorMessage lMessage = (ValidatorMessage) aMessage;
+            sb.append("\n\nMessage ").append(count).append(":\n");
+            sb.append("    Level: ").append(lMessage.getLevel()).append("\n");
+            sb.append("    Context: ").append(lMessage.getContext()).append("\n");
+            sb.append("     --> ").append(lMessage.getMessage()).append("\n");
         }
         txtOutput.setText(sb.toString());
         txtOutput.setCaretPosition(0);

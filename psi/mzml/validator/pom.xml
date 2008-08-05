@@ -8,7 +8,7 @@
     <artifactId>mzMLValidator</artifactId>
     <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
-    
+
     <name>PSI mzML semantic validator</name>
     <description>
         A semantic validator for PSI mzML XMl files.
