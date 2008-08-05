@@ -210,30 +210,17 @@ public class MzMLValidatorGUI extends JPanel {
         jfc.setDialogType(JFileChooser.OPEN_DIALOG);
         jfc.setDialogTitle("Select mzML file to validate");
         jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        jfc.addChoosableFileFilter(new FileFilter() {
-            public boolean accept(File f) {
-                boolean result = false;
-                if(f.isDirectory() || f.getName().toLowerCase().endsWith(".xml")) {
-                    result = true;
-                }
-                return result;
-            }
-
-            public String getDescription() {
-                return "XML file";
-            }
-        });
         jfc.setFileFilter(new FileFilter() {
             public boolean accept(File f) {
                 boolean result = false;
-                if(f.isDirectory() || f.getName().toLowerCase().endsWith(".mzml")) {
+                if(f.isDirectory() || f.getName().toLowerCase().endsWith(".mzml") || f.getName().toLowerCase().endsWith(".xml")) {
                     result = true;
                 }
                 return result;
             }
 
             public String getDescription() {
-                return "mzML file";
+                return "mzML files";
             }
         });
         returnVal = jfc.showOpenDialog(txtInputFile);
@@ -250,7 +237,7 @@ public class MzMLValidatorGUI extends JPanel {
             jpanValidator.txtInputFile.setText(args[0]);
         }
 
-        JFrame validatorFrame = new JFrame("mzML validator GUI (mzML version 0.99.1)");
+        JFrame validatorFrame = new JFrame("mzML validator GUI (mzML version 1.0)");
         validatorFrame.getContentPane().add(jpanValidator, BorderLayout.CENTER);
         validatorFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         validatorFrame.addWindowListener(new WindowAdapter() {
@@ -316,18 +303,15 @@ public class MzMLValidatorGUI extends JPanel {
                 progress.setString("Initializing validator...");
                 MzMLValidatorGUI.this.runStartTime = System.currentTimeMillis();
                 try {
-                    // Lazy cached validator.
-                    if(validator == null) {
-                        InputStream ontology = new FileInputStream("ontologies.xml");
-                        InputStream cvMapping = new FileInputStream("ms-mapping.xml");
-                        InputStream codedRules = new FileInputStream("ObjectRules.xml");
-                        validator = new MzMLValidator(ontology, cvMapping, codedRules);
-                        validator.setValidatorGUI( MzMLValidatorGUI.this );
-                        validator.setMessageReportLevel( getLevel() );
-                        ontology.close();
-                        cvMapping.close();
-                        codedRules.close();
-                    }
+                    InputStream ontology = new FileInputStream("ontologies.xml");
+                    InputStream cvMapping = new FileInputStream("ms-mapping.xml");
+                    InputStream codedRules = new FileInputStream("ObjectRules.xml");
+                    validator = new MzMLValidator(ontology, cvMapping, codedRules);
+                    validator.setValidatorGUI( MzMLValidatorGUI.this );
+                    validator.setMessageReportLevel( getLevel() );
+                    ontology.close();
+                    cvMapping.close();
+                    codedRules.close();
                     messages.addAll( validator.startValidation(inputFile) );
                 } catch(Exception e) {
                     MzMLValidatorGUI.this.notifyOfError(e);
@@ -365,8 +349,7 @@ public class MzMLValidatorGUI extends JPanel {
         long delta = System.currentTimeMillis() - runStartTime;
         // Reset run start time and moment.
         runStartTime = -1;
-//        progress.setString(DEFAULT_PROGRESS_MESSAGE + " (last run took " + (delta/1000) + " seconds)");
-        progress.setString(DEFAULT_PROGRESS_MESSAGE + " (last run took " + delta + " milliseconds)");
+        progress.setString(DEFAULT_PROGRESS_MESSAGE + " (last run took " + (delta/1000) + " seconds)");
         // Re-enable GUI.
         txtInputFile.setEnabled(true);
         btnBrowse.setEnabled(true);
@@ -378,13 +361,14 @@ public class MzMLValidatorGUI extends JPanel {
 
 
         ValidatorReport report = validator.getReport();
-        StringBuilder sb = new StringBuilder();
-        sb.append("CvMappingRule totat count: ").append(validator.getCvRuleManager().getCvRules().size()).append("\n");
-        sb.append("CvMappingRules not run: ").append(report.getCvRulesNotChecked().size()).append("\n");
-        sb.append("CvMappingRules with invalid Xpath: ").append(report.getCvRulesInvalidXpath().size()).append("\n");
-        sb.append("CvMappingRules with valid Xpath, but no hit: ").append(report.getCvRulesValidXpath().size()).append("\n");
-        sb.append("CvMappingRules run & valid: ").append(report.getCvRulesValid().size()).append("\n");
-        JOptionPane.showMessageDialog(this, sb.toString(), "CvMappingRule Report", JOptionPane.INFORMATION_MESSAGE);
+        StringBuilder sb = new StringBuilder("<html><body><table cellpadding='5'>");
+        sb.append("<tr align='left'><td>CvMappingRule total count: </td><td>").append(validator.getCvRuleManager().getCvRules().size()).append("</td></tr>");
+        sb.append("<tr align='left'><td>CvMappingRules not run: </td><td>").append(report.getCvRulesNotChecked().size()).append("</td></tr>");
+        sb.append("<tr align='left'><td>CvMappingRules with invalid Xpath: </td><td>").append(report.getCvRulesInvalidXpath().size()).append("</td></tr>");
+        sb.append("<tr align='left'><td>CvMappingRules with valid Xpath, but no hit: </td><td>").append(report.getCvRulesValidXpath().size()).append("</td></tr>");
+        sb.append("<tr align='left'><td>CvMappingRules run & valid: </td><td>").append(report.getCvRulesValid().size()).append("</td></tr>");
+        sb.append("</table></body></html>");
+        JOptionPane.showMessageDialog(this, new String[]{"", sb.toString()}, "CvMappingRule Report", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void showMessages(Collection<ValidatorMessage> aMessages) {

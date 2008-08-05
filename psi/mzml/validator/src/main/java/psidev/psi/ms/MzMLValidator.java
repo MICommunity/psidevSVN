@@ -211,10 +211,9 @@ public class MzMLValidator extends Validator {
      * @return  Collection with validator messages.
      */
     public Collection<ValidatorMessage> startValidation(File mzMLFile) {
-        this.progress = 0;
         // We create an MzMLUnmarshaller (this specialised Unmarshaller will internally use a XML index
         // to marshal the mzML file in snippets given by their Xpath)
-        unmarshaller = new MzMLUnmarshaller(mzMLFile);
+        this.unmarshaller = new MzMLUnmarshaller(mzMLFile);
 
 
 // ---------------- Internal consistency check of the CvMappingRules ---------------- //
@@ -262,31 +261,6 @@ public class MzMLValidator extends Validator {
             MzMLObjectIterator<MzMLObject> mzMLIter;
 
 
-            // shortcut to validate the whole file at once (it should be ok for small files
-            // , but not for large ones)
-//            xpath = "/";
-//            MzML mzML = um.unmarshall();
-//            tovalidate = new ArrayList<MzML>();
-//
-//            tovalidate.add(mzML);
-//            addMessages(messages, this.checkCvMapping(tovalidate, "/mzML"+ xpath), aMsgLevel);
-
-
-            // -------------------- Validate the CV list. -------------------- //
-            // ToDo: is this needed? Does not seem to have any CvMappingRules for it!
-//            xpath = "/mzML/cvList";
-//            if(aParent != null) {
-//                aParent.setProgress(6, "Validating " + xpath + "...");
-//            }
-//            MzMLObjectIterator<CVList> iter2 = um.unmarshalCollectionFromXpath(xpath, CVList.class);
-//            tovalidate = new ArrayList<CVList>();
-//            while (iter2.hasNext()) {
-//                CVList cvList =  iter2.next();
-//                tovalidate.add(cvList);
-//
-//            }
-//            MzMLValidator.addMessages(messages, this.checkCvMapping(tovalidate, "/mzML/cvList/"), aMsgLevel);
-
             // -------------------- Validate the file description. -------------------- //
             // ToDo: check: if there is only one such element in the XML, we can use the unmarshalFromXpath() method!
             //This is the new way to do it (not considering the unmarshaller)
@@ -314,29 +288,7 @@ public class MzMLValidator extends Validator {
                this.gui.setProgress(++progress, "Validating " + xpath + " (this might take a while)...");
            }
 
-//           // create synchonized List to which all threads can write their Validator messages
-//           Collection<ValidatorMessage> sync_msgs = Collections.synchronizedList(new ArrayList<ValidatorMessage>());
-//           // create a thread pool with queueing that will manage the validation of spectra
-//            int spectrumCount = unmarshaller.getObjectCountForXpath(xpath);
-//           ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 4, 1000, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(spectrumCount));
-//
-//           // now iterate over all spectra and submit them to the thread pool for validation
-//           MzMLObjectIterator<Spectrum> mzoIter = this.unmarshaller.unmarshalCollectionFromXpath(xpath, Spectrum.class);
-//           while (mzoIter.hasNext()) {
-//               // each spectra gets its own validation executor thread
-//               executor.execute(new SpecValidator(mzoIter.next(), sync_msgs));
-//           }
-//
-//           // after all sprectra have been submitted, we can shut down the thread pool
-//           // (it will still execute all pending jobs in the queue before terminating)
-//           executor.shutdown();
-//           // we wait until the pool has shut down (and all jobs have been executed)
-//           executor.awaitTermination(1000, TimeUnit.SECONDS);
-//           // now we add all the collected messages from the spectra validators to the general message list
-//           addMessages(sync_msgs, MessageLevel.WARN);
-//           /// done
-
-            // -------------------- Validate each spectrum list. -------------------- //
+            // -------------------- Validate each spectrum. -------------------- //
             mzMLIter = this.unmarshaller.unmarshalCollectionFromXpath("/mzML/run/spectrumList/spectrum", Spectrum.class);
 
             // create synchronized List to which all threads can write their Validator messages
@@ -516,28 +468,4 @@ public class MzMLValidator extends Validator {
 
         return result;
     }
-
-
-
-    private class SpecValidator implements Runnable {
-        Collection<ValidatorMessage> messages;
-        List<Spectrum> toValidate = new ArrayList<Spectrum>();
-
-        public SpecValidator(Spectrum spectrum, Collection<ValidatorMessage> msgs) {
-            this.messages = msgs;
-            this.toValidate = new ArrayList();
-            this.toValidate.add(spectrum);
-        }
-
-        public void run() {
-            try {
-                messages.addAll( checkCvMapping(toValidate, "/mzML/run/spectrumList/spectrum") );
-            } catch (ValidatorException e) {
-                e.printStackTrace();
-            }
-        }
-
-        }
-
-
 }

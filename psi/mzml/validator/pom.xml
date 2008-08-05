@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>psidev.psi.ms</groupId>
-    <artifactId>mzML_validator</artifactId>
+    <artifactId>mzMLValidator</artifactId>
     <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
     
@@ -21,9 +21,6 @@
     <!-- Additions Florian -->
 
     <build>
-        <!-- Additions Florian -->
-        <finalName>mzMLValidator</finalName>
-
         <plugins>
             <!-- To compile with JDK5.0 -->
             <plugin>
@@ -129,17 +126,10 @@
         </dependency>
 
         <dependency>
-            <groupId>psidev.psi.tools</groupId>
-            <artifactId>xxindex</artifactId>
-            <version>0.3</version>
+            <groupId>uk.ac.ebi.jmzml</groupId>
+            <artifactId>jmzml</artifactId>
+            <version>0.1-SNAPSHOT</version>
         </dependency>
-        <!--This dependency is in my local mvn repository. GroupId and ArtifactId are temp names-->
-        <dependency>
-           <groupId>uk.ac.ebi.jmzml</groupId>
-           <artifactId>jmzml</artifactId>
-           <version>0.1-SNAPSHOT</version>
-        </dependency>
-
     </dependencies>
 
     <distributionManagement>
