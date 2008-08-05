@@ -300,7 +300,7 @@ public class MzMLValidator extends Validator {
             Collection<InnerSpecValidator> runners = new ArrayList<InnerSpecValidator>();
             int processorCount = Runtime.getRuntime().availableProcessors();
             for(int i=0;i<processorCount;i++) {
-                InnerSpecValidator runner = new InnerSpecValidator(iteratorSync, lock);
+                InnerSpecValidator runner = new InnerSpecValidator(iteratorSync, lock, i);
                 runners.add(runner);
                 new Thread(runner).start();
             }
@@ -390,10 +390,12 @@ public class MzMLValidator extends Validator {
         Collection messages = new ArrayList();
         InnerLock lock = null;
         int count = 0;
+        int iNumber = -1;
 
-        public InnerSpecValidator(InnerIteratorSync<T> aIterator, InnerLock aLock) {
+        public InnerSpecValidator(InnerIteratorSync<T> aIterator, InnerLock aLock, int aNumber) {
             iter = aIterator;
             lock = aLock;
+            iNumber = aNumber;
         }
 
         public void run() {
