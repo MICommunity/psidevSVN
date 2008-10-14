@@ -128,8 +128,32 @@
         <dependency>
             <groupId>uk.ac.ebi.jmzml</groupId>
             <artifactId>jmzml</artifactId>
-            <version>0.2-SNAPSHOT</version>
+            <version>0.3-SNAPSHOT</version>
         </dependency>
+
+        <dependency>
+			<groupId>msv</groupId>
+			<artifactId>msv</artifactId>
+			<version>20050913</version>
+		</dependency>
+
+		<dependency>
+			<groupId>msv</groupId>
+			<artifactId>isorelax</artifactId>
+			<version>20050913</version>
+		</dependency>
+
+		<dependency>
+			<groupId>msv</groupId>
+			<artifactId>relaxngDatatype</artifactId>
+			<version>20050913</version>
+		</dependency>
+
+		<dependency>
+			<groupId>msv</groupId>
+			<artifactId>xsdlib</artifactId>
+			<version>20050913</version>
+		</dependency>
     </dependencies>
 
     <distributionManagement>

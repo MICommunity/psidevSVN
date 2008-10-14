@@ -305,15 +305,16 @@ public class MzMLValidatorGUI extends JPanel {
                 try {
                     // Lazy cached validator.
                     if(validator == null) {
-                    InputStream ontology = new FileInputStream("ontologies.xml");
-                    InputStream cvMapping = new FileInputStream("ms-mapping.xml");
-                    InputStream codedRules = new FileInputStream("ObjectRules.xml");
-                    validator = new MzMLValidator(ontology, cvMapping, codedRules);
-                    validator.setValidatorGUI( MzMLValidatorGUI.this );
-                    validator.setMessageReportLevel( getLevel() );
-                    ontology.close();
-                    cvMapping.close();
-                    codedRules.close();
+                        progress.setString("Loading configuration files...");
+                        InputStream ontology = new FileInputStream("ontologies.xml");
+                        InputStream cvMapping = new FileInputStream("ms-mapping.xml");
+                        InputStream codedRules = new FileInputStream("ObjectRules.xml");
+                        validator = new MzMLValidator(ontology, cvMapping, codedRules);
+                        validator.setValidatorGUI( MzMLValidatorGUI.this );
+                        validator.setMessageReportLevel( getLevel() );
+                        ontology.close();
+                        cvMapping.close();
+                        codedRules.close();
                     } else {
                         // reset all validator fields except the initialisation values (ontologies, object rules and cv mapping rules)
                         validator.reset();
@@ -321,6 +322,7 @@ public class MzMLValidatorGUI extends JPanel {
                         validator.setValidatorGUI( MzMLValidatorGUI.this );
                         validator.setMessageReportLevel( getLevel() );
                     }
+                    progress.setString("Indexing mzML file...");
                     messages.addAll( validator.startValidation(inputFile) );
                 } catch(Exception e) {
                     MzMLValidatorGUI.this.notifyOfError(e);

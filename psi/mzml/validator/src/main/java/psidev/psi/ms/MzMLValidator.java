@@ -217,7 +217,7 @@ public class MzMLValidator extends Validator {
 
         // We create an MzMLUnmarshaller (this specialised Unmarshaller will internally use a XML index
         // to marshal the mzML file in snippets given by their Xpath)
-        this.unmarshaller = new MzMLUnmarshaller(mzMLFile);
+        this.unmarshaller = new MzMLUnmarshaller(mzMLFile, false);
 
 
 // ---------------- Internal consistency check of the CvMappingRules ---------------- //
@@ -225,6 +225,7 @@ public class MzMLValidator extends Validator {
             // Validate CV Mapping Rules
             addMessages(this.checkCvMappingRules(), this.msgL);
             if(this.gui != null) { // report progress to the GUI if present
+                progress = 0;
                 this.gui.initProgress(progress, 13, progress);
                 this.gui.setProgress(++progress, "Reading CV rules...");
             }
