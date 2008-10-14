@@ -112,7 +112,6 @@ public class XmlXpathIndexer {
         while ( (nextByte(cis, buf)) != -1 ) {
             oldRead = read; // save previous byte
             read = buf[0];
-            String xx = new String(buf);
             // first keep track of all the line breaks, so we can count the line numbers
             if (read == '\n') {lineNum++;}
             if (oldRead == '\r' && read != '\n') {lineNum++;}
