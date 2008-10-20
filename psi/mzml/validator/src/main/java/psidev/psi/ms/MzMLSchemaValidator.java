@@ -80,7 +80,9 @@ public class MzMLSchemaValidator {
 
     private static Schema SCHEMA = null;
 
-    private static final String SCHEMA_NAME = "mzML1.0.0_idx.xsd";
+    public static void setSchema(File aSchemaFile) throws IOException, VerifierConfigurationException, SAXException {
+        SCHEMA = VERIFIER_FACTORY.compileSchema(new FileInputStream(aSchemaFile));
+    }
 
     /**
      * This method must be implemented to create a suitable Schema object for the
@@ -92,31 +94,46 @@ public class MzMLSchemaValidator {
      */
     public static XMLValidationErrorHandler validate(Reader reader) throws IOException, VerifierConfigurationException, SAXException {
         if (SCHEMA == null) {
-            SCHEMA = VERIFIER_FACTORY.compileSchema(new FileInputStream(SCHEMA_NAME));
+            throw new IllegalStateException("You need to set a schema to validate against first! use the 'setSchema(File aSchemaFile)' method for this!");
         }
         return validate(reader, SCHEMA);
     }
 
     public static void main(String[] args) {
 
-        if(args == null || args.length != 1) {
+        if(args == null || args.length != 2) {
             printUsage();
             System.exit(1);
         }
+        // Check schema file.
+        File schemaFile = new File(args[0]);
+        if(!schemaFile.exists()){
+            System.err.println("\nUnable to find the schema file you specified: '" + args[0] + "'!\n");
+            System.exit(1);
+        }
+        if(schemaFile.isDirectory()) {
+            System.err.println("\nThe schema file you specified ('" + args[0] + "') was a folder, not a file!\n");
+            System.exit(1);
+        }
+        if(!schemaFile.getName().toLowerCase().endsWith(".xsd")) {
+            System.err.println("Warning: your schema file does not carry the extension '.xsd'!");
+        }
 
-        // Check input file and output folder.
-        File inputFolder = new File(args[0]);
+        // Check input folder.
+        File inputFolder = new File(args[1]);
         if(!inputFolder.exists()){
-            System.err.println("\nUnable to find the input folder you specified: '" + args[0] + "'!\n");
+            System.err.println("\nUnable to find the input folder you specified: '" + args[1] + "'!\n");
             System.exit(1);
         }
         if(!inputFolder.isDirectory()) {
-            System.err.println("\nThe input folder you specified ('" + args[0] + "') was a file, not a folder!\n");
+            System.err.println("\nThe input folder you specified ('" + args[1] + "') was a file, not a folder!\n");
             System.exit(1);
         }
 
         BufferedReader br = null;
         try {
+            // Set the schema.
+            setSchema(schemaFile);
             System.out.println("\nRetrieving files from '" + inputFolder.getAbsolutePath() + "'...");
             File[] inputFiles = inputFolder.listFiles(new FilenameFilter() {
                 public boolean accept(File dir, String name) {
@@ -159,7 +176,7 @@ public class MzMLSchemaValidator {
     private static void printUsage() {
         StringBuffer out = new StringBuffer();
         out.append("\n\nUsage: java ").append(MzMLSchemaValidator.class.getName());
-        out.append(" <inputfolder> ");
+        out.append(" <schema_file> <inputfolder> ");
         System.out.println(out.toString());
     }
 
