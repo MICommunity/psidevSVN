@@ -93,6 +93,10 @@ public class XmlXpathIndexer {
         StandardXpathIndex index = new StandardXpathIndex(aXpathInclusionSet);
 
         // create a index that will or will not record the line number according to the specification
+        if ( log.isDebugEnabled() ) {
+            log.debug( "Indexing " + (recordLineNumber ? "and" : "without") + " keeping track of line numbers." );
+        }
+
         index.setRecordLineNumber(recordLineNumber);
 
         Stack<TmpIndexElement> stack = new Stack<TmpIndexElement>();
@@ -113,8 +117,12 @@ public class XmlXpathIndexer {
             oldRead = read; // save previous byte
             read = buf[0];
             // first keep track of all the line breaks, so we can count the line numbers
-            if (read == '\n') {lineNum++;}
-            if (oldRead == '\r' && read != '\n') {lineNum++;}
+            if (read == '\n') {
+                lineNum++;
+            }
+            if (oldRead == '\r' && read != '\n') {
+                lineNum++;
+            }
             // now check for XML tags
             if ( read == '<' && !inQuote ) { // possible start tag
                 startPos = cis.getByteCount() -1; // we want the '<' included
@@ -152,7 +160,7 @@ public class XmlXpathIndexer {
                         stack.push(element);
                         String xpath = createPathFromStack(stack);
                         stack.pop();
-                         index.put(xpath, element.getStart(), element.getStop(), element.getLineNumber());
+                        index.put(xpath, element.getStart(), element.getStop(), element.getLineNumber());
                     } else { // end of regular start tag
                         String tagName = getTagName(bb);
                         bb.clear();
@@ -190,7 +198,7 @@ public class XmlXpathIndexer {
                         throw new IllegalStateException("Internal stack of XML tags was corrupted!");
                     }
                     element.setStop(stopPos);
-                     index.put(xpath, element.getStart(), element.getStop(), element.getLineNumber());
+                    index.put(xpath, element.getStart(), element.getStop(), element.getLineNumber());
                     // reset stopPos ?
                 }
             }
