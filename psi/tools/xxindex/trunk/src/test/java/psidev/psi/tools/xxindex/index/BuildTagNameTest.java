@@ -24,18 +24,15 @@ public class BuildTagNameTest {
     @Test
     public void buildTagNameTest() throws Exception {
         List<ByteBuffer> buffers = createTestByteBuffer();
-        System.out.println( "Number of test-cases: " + buffers.size() );
         for ( ByteBuffer buffer : buffers ) {
-            System.out.print("Full tag: <" + buffer.toString() + "> ");
             String tagName = XmlXpathIndexer.getTagName( buffer );
-            System.out.println( "Extracted tag name: " + tagName );
             Assert.assertEquals("Extracted tag name does not match expected: ", controlTagName, tagName );
         }
     }
 
     private List<ByteBuffer> createTestByteBuffer() throws URISyntaxException, IOException {
         List<ByteBuffer> bBuf = new ArrayList<ByteBuffer>();
-        URL url = BuildTagNameTest.class.getClassLoader().getResource( "testTagName" );
+        URL url = BuildTagNameTest.class.getResource( "/testTagName" );
         File testDir = new File( url.toURI() ); // get the directory of the test files
         File[] files = testDir.listFiles();
         byte[] b = new byte[1];

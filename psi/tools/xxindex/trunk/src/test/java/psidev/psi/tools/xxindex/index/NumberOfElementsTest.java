@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
- * TODO comment this.
  *
  * @author florian
  * Date: 01-Aug-2007
@@ -23,10 +22,9 @@ public class NumberOfElementsTest {
     @Test
     public void numberOfElementsTest() throws IOException, URISyntaxException {
         String xpath = "/first/second/third/fourth";
-        URL url = NumberOfElementsTest.class.getClassLoader().getResource(".");
+        URL url = NumberOfElementsTest.class.getResource(".");
         File fileDir = new File(url.toURI());
         List<File> files = getTestFileList(fileDir, "test");
-        System.out.println("Testing " + files.size() + " files:");
         for (File file : files) {
             FileInputStream fis = new FileInputStream(file);
             StandardXpathIndex index = XmlXpathIndexer.buildIndex(fis);
