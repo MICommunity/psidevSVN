@@ -276,10 +276,8 @@ public class StandardXmlElementExtractor implements XmlElementExtractor {
         return charset;
     }
 
-    
-
     protected String detectFileEncoding(String filename) throws IOException {
-        URL url = StandardXmlElementExtractor.class.getClassLoader().getResource(filename);
+        URL url = StandardXmlElementExtractor.class.getResource(filename);
         return detectFileEncoding(url);
     }
 
