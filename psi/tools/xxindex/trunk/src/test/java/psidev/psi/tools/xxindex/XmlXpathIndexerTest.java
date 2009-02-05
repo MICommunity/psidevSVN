@@ -188,21 +188,21 @@ public class XmlXpathIndexerTest {
     // ToDo: more tests on parsing, indexing and reading bits
     // e.g. check correct building of tag names (tags with attributes, spaces, new line,...)
 
-    @Test
-    public void lineNumber_1() throws Exception {
-        final String fileResource = "C:\\validator-data\\test20081104_A.mif25";
-
-        InputStream is = new FileInputStream( new File( fileResource ) );
-        XpathIndex index = null;
-        index = XmlXpathIndexer.buildIndex( is, null, true );
-        is.close();
-
-        Assert.assertNotNull( index );
-
-        Assert.assertTrue( index.isRecordLineNumber() );
-
-        checkUniqueElementLineNumber( index, "/entrySet", 4 );
-    }
+//    @Test
+//    public void lineNumber_1() throws Exception {
+//        final String fileResource = "C:\\validator-data\\test20081104_A.mif25";
+//
+//        InputStream is = new FileInputStream( new File( fileResource ) );
+//        XpathIndex index = null;
+//        index = XmlXpathIndexer.buildIndex( is, null, true );
+//        is.close();
+//
+//        Assert.assertNotNull( index );
+//
+//        Assert.assertTrue( index.isRecordLineNumber() );
+//
+//        checkUniqueElementLineNumber( index, "/entrySet", 4 );
+//    }
 
     @Test
     public void dipSampleFile_lineNumber() throws Exception {
