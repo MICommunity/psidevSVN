@@ -86,6 +86,34 @@ public class XmlXpathIndexer {
      * @see this#buildIndex(java.io.InputStream)
      */
     public static StandardXpathIndex buildIndex(InputStream is, Set<String> aXpathInclusionSet, boolean recordLineNumber) throws IOException {
+        return buildIndex(is, aXpathInclusionSet, true, true);
+    }
+
+    /**
+     * This method indexes the XML file accessible via the specified inputstream.
+     * All xpaths that do not correspond to one of the xpaths included
+     * in the xpath exclusion set will be ignored and therefore omitted from the index!
+     * Note: a value of 'null' is allowed for the aXpathInclusionSet parameter and will
+     * produce the same result as buildIndex(InputStream is).
+     *
+     * @param is    inputstream to the XML file to index.
+     * @param aXpathInclusionSet    Set with the String representation
+     *                              of the xpaths to include in the index.
+     *                              <b>Note</b> that these xpaths should have
+     *                              their trailing '/' removed!
+     *                              <b>Also note</b> that any xpath not included
+     *                              in this list will <b>not</b> be added
+     *                              to the index! Can be 'null' to ensure
+     *                              inclusion of all xpaths.
+     * @param recordLineNumber boolean flag to switch line number recording on or off.
+     *                         If switched off, the created index will need less memory.
+     * @param ignoreNSPrefix   boolean flag, if set to true (default) namespace prefixes (ending in ':')
+     *                         will be ignored when reading tag names for the XML elements.
+     * @return the LineXpathIndex for the XML file.
+     * @throws IOException when a IOException occurs during XML file access.
+     * @see this#buildIndex(java.io.InputStream)
+     */
+    public static StandardXpathIndex buildIndex(InputStream is, Set<String> aXpathInclusionSet, boolean recordLineNumber, boolean ignoreNSPrefix) throws IOException {
         BufferedInputStream bis = new BufferedInputStream(is);
 
         CountingInputStream cis = new CountingInputStream( bis );
@@ -153,7 +181,7 @@ public class XmlXpathIndexer {
                 stopPos = cis.getByteCount();
                 if ( startTag ) { // end of start tag
                     if ( oldRead == '/' ) { // self closing start tag
-                        String tagName = getTagName(bb);
+                        String tagName = getTagName(bb, ignoreNSPrefix);
                         bb.clear();
                         // since it is a self closing start tag, we can set the stop position already
                         TmpIndexElement element = new TmpIndexElement(tagName, startPos, stopPos, lineNum);
@@ -162,7 +190,7 @@ public class XmlXpathIndexer {
                         stack.pop();
                         index.put(xpath, element.getStart(), element.getStop(), element.getLineNumber());
                     } else { // end of regular start tag
-                        String tagName = getTagName(bb);
+                        String tagName = getTagName(bb, ignoreNSPrefix);
                         bb.clear();
                         // only set start, since we don't know yet where this element ends
                         TmpIndexElement element = new TmpIndexElement(tagName, startPos, -1L, lineNum);
@@ -173,7 +201,7 @@ public class XmlXpathIndexer {
                     // reset startPos ?
                     bb.clear();
                 } else if ( closingTag ) { // end of regular closing tag
-                    String tagName = getTagName(bb);
+                    String tagName = getTagName(bb, ignoreNSPrefix);
                     bb.clear();
                     recording = false;
                     closingTag = false;
@@ -232,11 +260,15 @@ public class XmlXpathIndexer {
 
     /**
      * Method to extract the tag name out of the ByteBuffer containing all the bytes of the tag
-     * (including attributes).
+     * (including attributes). The tag name is considered to start after '<' and end at any of the
+     * characters ' ', '\t', '\n' or '\r'.
+     *
      * @param bb ByteBuffer of all the bytes between '<' and '>'
+     * @param ignoreNSPrefix  if set to true and the buffer contains a ':' before the name end is detected,
+     *                        then all characters upto this position are regarded as prefix and ignored.        
      * @return String of the tag name.
      */
-    protected static String getTagName(ByteBuffer bb) {
+    protected static String getTagName(ByteBuffer bb, boolean ignoreNSPrefix) {
         ByteBuffer bbTmp = new ByteBuffer();
         // get name (every byte till first blank)
         for (Byte aByte : bb) {
@@ -245,10 +277,11 @@ public class XmlXpathIndexer {
                 break;
             }
             bbTmp.append(aByte);
-            if (aByte == ':') {
+
+            if (ignoreNSPrefix && aByte == ':') {
                 // if we encouter a ':' we have a namespace prefix
                 // since we do not handle this, we just get rid of it: all the characters
-                // in the byte buffer are prefix and have to be removed
+                // in the byte buffer (including the current ':') are prefix and have to be removed
                 bbTmp.clear();
             }
         }
@@ -298,4 +331,5 @@ public class XmlXpathIndexer {
             return name;
         }
     }
+
 }

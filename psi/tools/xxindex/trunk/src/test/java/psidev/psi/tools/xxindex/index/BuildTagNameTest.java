@@ -25,7 +25,7 @@ public class BuildTagNameTest {
     public void buildTagNameTest() throws Exception {
         List<ByteBuffer> buffers = createTestByteBuffer();
         for ( ByteBuffer buffer : buffers ) {
-            String tagName = XmlXpathIndexer.getTagName( buffer );
+            String tagName = XmlXpathIndexer.getTagName( buffer, true );
             Assert.assertEquals("Extracted tag name does not match expected: ", controlTagName, tagName );
         }
     }

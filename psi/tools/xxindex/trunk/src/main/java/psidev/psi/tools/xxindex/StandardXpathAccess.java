@@ -24,6 +24,7 @@ public class StandardXpathAccess implements XpathAccess {
     private File file;
     private XpathIndex index;
     private XmlElementExtractor extractor;
+    private boolean ignoreNSPrefix = true;
 
     ////////////////////
     // Constructors
@@ -71,7 +72,7 @@ public class StandardXpathAccess implements XpathAccess {
         this.file = file;
         this.index = XmlXpathIndexer.buildIndex( new FileInputStream( file ), aXpathInclusionSet, recordLineNumbers );
         this.extractor = new StandardXmlElementExtractor();
-        String enc = extractor.detectFileEncoding( file.toURL() );
+        String enc = extractor.detectFileEncoding( file.toURI().toURL() );
         extractor.setEncoding( enc );
     }
 
@@ -88,6 +89,14 @@ public class StandardXpathAccess implements XpathAccess {
      */
     public XpathIndex getIndex() {
         return index;
+    }
+
+    public boolean isIgnoreNSPrefix() {
+        return ignoreNSPrefix;
+    }
+
+    public void setIgnoreNSPrefix(boolean ignoreNSPrefix) {
+        this.ignoreNSPrefix = ignoreNSPrefix;
     }
 
     ////////////////////
