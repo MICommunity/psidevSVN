@@ -242,7 +242,7 @@ public class StandardXpathAccess implements XpathAccess {
             try {
                 result = extractor.readString( range.getStart(), range.getStop(), file );
             } catch ( IOException e ) {
-                throw new IllegalStateException( "Caught IOException while reading from file: " + file.getName() );
+                throw new IllegalStateException( "Caught IOException while reading from file: " + file.getName(), e );
             }
             return result;
         }

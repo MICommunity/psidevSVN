@@ -245,6 +245,12 @@ public class XmlXpathIndexer {
                 break;
             }
             bbTmp.append(aByte);
+            if (aByte == ':') {
+                // if we encouter a ':' we have a namespace prefix
+                // since we do not handle this, we just get rid of it: all the characters
+                // in the byte buffer are prefix and have to be removed
+                bbTmp.clear();
+            }
         }
         // might still contain a leading or trailing '/' from self closing start tags or regular closing tags
         // get rid of leading '/' if closing tag
