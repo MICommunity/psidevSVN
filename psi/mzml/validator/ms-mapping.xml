@@ -23,7 +23,7 @@
         </CvMappingRule>
         
         <!-- contact -->
-        <CvMappingRule id="contact_must" cvElementPath="/mzML/fileDescription/contact/cvParam/@accession" requirementLevel="MUST" scopePath="/mzML/fileDescription/contact/cvParam" cvTermsCombinationLogic="AND" >
+        <CvMappingRule id="contact_must" cvElementPath="/mzML/fileDescription/contact/cvParam/@accession" requirementLevel="MUST" scopePath="/mzML/fileDescription/contact" cvTermsCombinationLogic="AND" >
             <CvTerm termAccession="MS:1000586" useTermName="false" useTerm="true" termName="contact name" isRepeatable="false" allowChildren="false" cvIdentifierRef="MS" />
             <CvTerm termAccession="MS:1000590" useTermName="false" useTerm="true" termName="contact organization" isRepeatable="false" allowChildren="false" cvIdentifierRef="MS" />
         </CvMappingRule>
