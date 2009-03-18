@@ -10,14 +10,20 @@ import org.xml.sax.SAXException;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.ErrorHandler;
-import org.iso_relax.verifier.VerifierFactory;
-import org.iso_relax.verifier.Schema;
-import org.iso_relax.verifier.Verifier;
-import org.iso_relax.verifier.VerifierConfigurationException;
 
 import java.io.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.net.URI;
+import java.net.MalformedURLException;
 
-import com.sun.msv.verifier.jarv.TheFactoryImpl;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Schema;
+import javax.xml.validation.Validator;
+import javax.xml.transform.sax.SAXSource;
+
+import psidev.psi.tools.validator.ValidatorMessage;
+import psidev.psi.tools.validator.MessageLevel;
 /*
  * CVS information:
  *
@@ -32,21 +38,17 @@ import com.sun.msv.verifier.jarv.TheFactoryImpl;
  * @version $Id$
  */
 public class MzMLSchemaValidator {
-        /**
-     * This static object is used by the concrete implementation to create the Schema object
-     * used for validation.
-     */
-    protected static final VerifierFactory VERIFIER_FACTORY = new TheFactoryImpl();
 
     /**
-     * This method must be implemented to create a suitable Schema object for the
-     * xsd file in question.
-     *
-     * @param xmlFileReader the XML file being validated as a Stream (Reader)
-     * @return an XMLValidationErrorHandler that can be queried to return all of the
-     *         error in the XML file as plain text or HTML.
+     * This static object is used to create the Schema object
+     * used for validation.
      */
-//	public static abstract XMLValidationErrorHandler validate(InputStream xmlFileReader) throws IOException, VerifierConfigurationException, SAXException;
+    private static final SchemaFactory SCHEMA_FACTORY = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
+
+    /**
+     * The schema to validate against.
+     */
+    private Schema schema = null;
 
     /**
      * This method carries out the work of validating the XML file passed in through
@@ -58,30 +60,30 @@ public class MzMLSchemaValidator {
      *               performed by the implementing sub-class of this abstract class.)
      * @return an XMLValidationErrorHandler that can be queried for details of any
      *         parsing errors to retrieve plain text or HTML
-     * @throws java.io.IOException                    if the XML file cannot be accessed / read.
-     * @throws org.iso_relax.verifier.VerifierConfigurationException
      * @throws org.xml.sax.SAXException
      */
-    protected static XMLValidationErrorHandler validate(Reader reader, Schema schema)
-            throws IOException, VerifierConfigurationException, SAXException {
+    protected MzMLValidationErrorHandler validate(Reader reader, Schema schema)
+            throws SAXException {
 
-        final XMLValidationErrorHandler xmlValidationErrorHandler = new XMLValidationErrorHandler();
-        Verifier schemaVerifier = schema.newVerifier();
-        schemaVerifier.setErrorHandler(xmlValidationErrorHandler);
+        final MzMLValidationErrorHandler mzMLValidationErrorHandler = new MzMLValidationErrorHandler();
+        Validator validator = schema.newValidator();
+        validator.setErrorHandler(mzMLValidationErrorHandler);
         try {
-            schemaVerifier.verify(new InputSource(reader));
-        } catch (SAXParseException e) {
-            //this will catch well-formedness exceptions that might be thrown
-            //by the SAX parser
-            xmlValidationErrorHandler.error(e);
+            validator.validate( new SAXSource( new InputSource(reader) ) );
+        } catch (IOException ioe) {
+            mzMLValidationErrorHandler.fatalError(ioe);
+        } catch (SAXParseException spe) {
+            mzMLValidationErrorHandler.fatalError(spe);
         }
-        return xmlValidationErrorHandler;
+        return mzMLValidationErrorHandler;
     }
 
-    private static Schema SCHEMA = null;
+    public void setSchema(URI aSchemaUri) throws SAXException, MalformedURLException {
+        schema = SCHEMA_FACTORY.newSchema(aSchemaUri.toURL());
+    }
 
-    public static void setSchema(File aSchemaFile) throws IOException, VerifierConfigurationException, SAXException {
-        SCHEMA = VERIFIER_FACTORY.compileSchema(new FileInputStream(aSchemaFile));
+    public Schema getSchema() {
+        return schema;
     }
 
     /**
@@ -92,14 +94,16 @@ public class MzMLSchemaValidator {
      * @return an XMLValidationErrorHandler that can be queried to return all of the
      *         error in the XML file as plain text or HTML.
      */
-    public static XMLValidationErrorHandler validate(Reader reader) throws IOException, VerifierConfigurationException, SAXException {
-        if (SCHEMA == null) {
+    public MzMLValidationErrorHandler validate(Reader reader) throws SAXException {
+        if (schema == null) {
             throw new IllegalStateException("You need to set a schema to validate against first! use the 'setSchema(File aSchemaFile)' method for this!");
         }
-        return validate(reader, SCHEMA);
+        return validate(reader, schema);
     }
 
     public static void main(String[] args) {
+
+        MzMLSchemaValidator validator = new MzMLSchemaValidator();
 
         if(args == null || args.length != 2) {
             printUsage();
@@ -122,18 +126,18 @@ public class MzMLSchemaValidator {
         // Check input folder.
         File inputFolder = new File(args[1]);
         if(!inputFolder.exists()){
-            System.err.println("\nUnable to find the input folder you specified: '" + args[1] + "'!\n");
+            System.out.println("\nUnable to find the input folder you specified: '" + args[1] + "'!\n");
             System.exit(1);
         }
         if(!inputFolder.isDirectory()) {
-            System.err.println("\nThe input folder you specified ('" + args[1] + "') was a file, not a folder!\n");
+            System.out.println("\nThe input folder you specified ('" + args[1] + "') was a file, not a folder!\n");
             System.exit(1);
         }
 
         BufferedReader br = null;
         try {
             // Set the schema.
-            setSchema(schemaFile);
+            validator.setSchema(schemaFile.toURI());
             System.out.println("\nRetrieving files from '" + inputFolder.getAbsolutePath() + "'...");
             File[] inputFiles = inputFolder.listFiles(new FilenameFilter() {
                 public boolean accept(File dir, String name) {
@@ -146,16 +150,17 @@ public class MzMLSchemaValidator {
             });
             System.out.println("Found " + inputFiles.length + " input files.\n");
             System.out.println("Validating files...");
-            for (int i = 0; i < inputFiles.length; i++) {
-                File inputFile = inputFiles[i];
-                System.out.println("  - Validating file '" + inputFile.getAbsolutePath() + "'...");
+            for (File inputFile : inputFiles) {
+                System.out.println("\n\n\n  - Validating file '" + inputFile.getAbsolutePath() + "'...");
                 br = new BufferedReader(new FileReader(inputFile));
-                XMLValidationErrorHandler xveh = validate(br);
-                if(xveh.noErrors()) {
+                MzMLValidationErrorHandler xveh = validator.validate(br);
+                if (xveh.noErrors()) {
                     System.out.println("    File is valid!");
                 } else {
-                    System.err.println("    * Errors detected: ");
-                    System.err.println(xveh.getErrorsFormattedAsPlainText());
+                    System.out.println("    * Errors detected: ");
+                    for (ValidatorMessage vMsg : xveh.getErrorsAsValidatorMessages()) {
+                        System.out.println( vMsg.getMessage() );
+                    }
                 }
                 br.close();
             }
@@ -180,126 +185,4 @@ public class MzMLSchemaValidator {
         System.out.println(out.toString());
     }
 
-    private static class XMLValidationErrorHandler implements ErrorHandler {
-
-            public XMLValidationErrorHandler() {
-                super();
-            }
-
-            private StringBuffer errorMessageBuffer = null;
-
-            public boolean noErrors() {
-                return errorMessageBuffer == null;
-            }
-
-            public String getErrorsFormattedAsPlainText() {
-                if (noErrors()) {
-                    return null;
-                }
-                return errorMessageBuffer.toString();
-            }
-
-            public String getErrorsFormattedAsHTML() {
-                if (noErrors()) {
-                    return null;
-                }
-                return (errorMessageBuffer.toString().replaceAll("<", "&lt;")).replaceAll(">", "&gt;").replaceAll("\\n", "<br/>");
-            }
-
-
-            private void initialiseErrorMessageBuffer() {
-                if (errorMessageBuffer == null) {
-                    errorMessageBuffer = new StringBuffer("Unfortunately, your XML document does not conform to the XML schema for the following reasons:\n");
-                }
-            }
-
-            /**
-             * Receive notification of a recoverable error.
-             * <p/>
-             * <p>This corresponds to the definition of "error" in section 1.2
-             * of the W3C XML 1.0 Recommendation.  For example, a validating
-             * parser would use this callback to report the violation of a
-             * validity constraint.  The default behaviour is to take no
-             * action.</p>
-             * <p/>
-             * <p>The SAX parser must continue to provide normal parsing events
-             * after invoking this method: it should still be possible for the
-             * application to process the document through to the end.  If the
-             * application cannot do so, then the parser should report a fatal
-             * error even if the XML 1.0 recommendation does not require it to
-             * do so.</p>
-             * <p/>
-             * <p>Filters may use this method to report other, non-XML errors
-             * as well.</p>
-             *
-             * @param exception The error information encapsulated in a
-             *                  SAX parse exception.
-             * @throws org.xml.sax.SAXException Any SAX exception, possibly
-             *                                  wrapping another exception.
-             * @see org.xml.sax.SAXParseException
-             */
-            public void error(SAXParseException exception) throws SAXException {
-                initialiseErrorMessageBuffer();
-                errorMessageBuffer.append("\n\nNon-fatal XML Parsing error detected on line ")
-                        .append(exception.getLineNumber())
-                        .append("\nError message: ")
-                        .append(exception.getMessage());
-            }
-
-            /**
-             * Receive notification of a non-recoverable error.
-             * <p/>
-             * <p>This corresponds to the definition of "fatal error" in
-             * section 1.2 of the W3C XML 1.0 Recommendation.  For example, a
-             * parser would use this callback to report the violation of a
-             * well-formedness constraint.</p>
-             * <p/>
-             * <p>The application must assume that the document is unusable
-             * after the parser has invoked this method, and should continue
-             * (if at all) only for the sake of collecting addition error
-             * messages: in fact, SAX parsers are free to stop reporting any
-             * other events once this method has been invoked.</p>
-             *
-             * @param exception The error information encapsulated in a
-             *                  SAX parse exception.
-             * @throws org.xml.sax.SAXException Any SAX exception, possibly
-             *                                  wrapping another exception.
-             * @see org.xml.sax.SAXParseException
-             */
-            public void fatalError(SAXParseException exception) throws SAXException {
-                initialiseErrorMessageBuffer();
-                errorMessageBuffer.append("\n\nFATAL XML Parsing error detected on line ")
-                        .append(exception.getLineNumber())
-                        .append("\nFatal Error message: ")
-                        .append(exception.getMessage());
-            }
-
-            /**
-             * Receive notification of a warning.
-             * <p/>
-             * <p>SAX parsers will use this method to report conditions that
-             * are not errors or fatal errors as defined by the XML 1.0
-             * recommendation.  The default behaviour is to take no action.</p>
-             * <p/>
-             * <p>The SAX parser must continue to provide normal parsing events
-             * after invoking this method: it should still be possible for the
-             * application to process the document through to the end.</p>
-             * <p/>
-             * <p>Filters may use this method to report other, non-XML warnings
-             * as well.</p>
-             *
-             * @param exception The warning information encapsulated in a
-             *                  SAX parse exception.
-             * @throws org.xml.sax.SAXException Any SAX exception, possibly
-             *                                  wrapping another exception.
-             * @see org.xml.sax.SAXParseException
-             */
-            public void warning(SAXParseException exception) throws SAXException {
-                initialiseErrorMessageBuffer();
-                errorMessageBuffer.append("\n\nWarning: Validation of the XMl has detected the following condition on line ")
-                        .append(exception.getLineNumber())
-                        .append("\nWarning message: ")
-                        .append(exception.getMessage());
-            }
-        }
 }

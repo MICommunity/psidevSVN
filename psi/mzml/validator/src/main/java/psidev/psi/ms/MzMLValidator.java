@@ -15,22 +15,24 @@ import psidev.psi.tools.validator.ValidatorMessage;
 import psidev.psi.tools.validator.rules.cvmapping.CvRule;
 import psidev.psi.tools.validator.util.ValidatorReport;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
+import java.net.URL;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshaller;
 import uk.ac.ebi.jmzml.xml.io.MzMLObjectIterator;
 import uk.ac.ebi.jmzml.model.mzml.*;
 import uk.ac.ebi.jmzml.model.mzml.interfaces.MzMLObject;
 
-/**
- * CVS information:
- *
- * $Revision$
- * $Date$
- */
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Schema;
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
+
+import org.xml.sax.SAXException;
 
 /**
  * This class represents the PSI mzML semantic validator.
@@ -46,11 +48,20 @@ public class MzMLValidator extends Validator {
     private MzMLUnmarshaller unmarshaller = null;
     private Collection<ValidatorMessage> msgs = null;
 
+    private URI schemaUri = null;
+    private boolean skipValidation = false;
+
     //Constructor that passes the 3 configuration files to the generic validator:
     public MzMLValidator(InputStream aOntologyConfig, InputStream aCvMapping, InputStream aCodedRule)
                                                         throws ValidatorException, OntologyLoaderException {
         super(aOntologyConfig, aCvMapping, aCodedRule);
         msgs = new ArrayList<ValidatorMessage>();
+        try {
+            // ToDo: find better default value: e.g. official address or local file
+            schemaUri = new URI("http://psidev.cvs.sourceforge.net/*checkout*/psidev/psi/psi-ms/mzML/schema/mzML1.1.0_idx.xsd");
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("Could not create URI for schema location!", e);
+        }
     }
 
     /**
@@ -69,6 +80,46 @@ public class MzMLValidator extends Validator {
      */
     public void setMessageReportLevel( MessageLevel level ) {
         this.msgL = level;
+    }
+
+    /**
+     * Get the currently specified schema URI instance files are validated against.
+     * @return the URI pointing to the mzML schema.
+     */
+    public URI getSchemaUri() {
+        return schemaUri;
+    }
+
+    /**
+     * Use this to overwrite default schema location and
+     * specify your own schema to validate against.
+     * Note: to be able to validate both indexed and non-indexed
+     *       mzML files, the schema for the indexed mzML should be
+     *       given.
+     *
+     * @param schemaUri the URI that points to the schema.
+     */
+    public void setSchemaUri(URI schemaUri) {
+        this.schemaUri = schemaUri;
+    }
+
+    /**
+     * Flag to skip the schema validation step.
+     *
+     * @return true if the schema validaton skep will be skipped with the current settings,
+     *         false if a schema validation will be performed.
+     */
+    public boolean isSkipValidation() {
+        return skipValidation;
+    }
+
+    /**
+     * Flag to specify if a schema validation is to be performed.
+     *
+     * @param skipValidation set to true if the schema validation step should be skipped.
+     */
+    public void setSkipValidation(boolean skipValidation) {
+        this.skipValidation = skipValidation;
     }
 
     /**
@@ -140,10 +191,9 @@ public class MzMLValidator extends Validator {
 
         }
 
-            
+
 
         // OK, all validated. Let's get going!
-
         Collection<ValidatorMessage> messages = new ArrayList<ValidatorMessage>();
         // We create the validator here:
         MzMLValidator validator= null;
@@ -215,6 +265,57 @@ public class MzMLValidator extends Validator {
         // this will currently reset the status of all CvRules to a "not run" status
         super.resetCvRuleStatus();
 
+        // init gui
+        if (this.gui != null) {
+            progress = 0;
+            // 10 steps: schema validation, reading cv-rules, fileDescription,
+            //           sampleList, instrumentConfigurationList, software,
+            //           dataProcessingList, chromatogram, spectrum, complete
+            this.gui.initProgress(progress, 10, progress);
+        }
+
+        // first up we check if the file is actually valid against the schema (if not disabled)
+        String guiProgressNote;
+        if (skipValidation) {
+            guiProgressNote = "Skipping schema validation!";
+            if (this.gui != null) {
+                this.gui.setProgress(++progress, guiProgressNote);
+            } else {
+                System.out.println(guiProgressNote);
+            }
+        } else { // validating
+            guiProgressNote = "Validating against schema.";
+            if (this.gui != null) {
+                this.gui.setProgress(++progress, guiProgressNote);
+            } else {
+                System.out.println(guiProgressNote);
+            }
+
+            boolean valid;
+            try {
+                valid = isValidMzML(mzMLFile, schemaUri, this.msgs);
+            } catch (SAXException e) {
+                log.error("ERROR during schema validation.", e);
+                this.msgs.add(new ValidatorMessage("ERROR during schema validation." + e.getMessage(), MessageLevel.ERROR));
+                valid = false;
+            }
+
+            // handle validation failure
+            if (!valid) {
+                if (this.gui != null) {
+                    return this.msgs;
+                } else {
+                    System.err.println("The provided file is not valid against the mzML schema!");
+                    System.err.println("Input file     : " + mzMLFile.getAbsolutePath());
+                    System.err.println("Schema location: " + schemaUri);
+                    System.exit(-1);
+                }
+            }
+
+        }
+
+
+
         // We create an MzMLUnmarshaller (this specialised Unmarshaller will internally use a XML index
         // to marshal the mzML file in snippets given by their Xpath)
         this.unmarshaller = new MzMLUnmarshaller(mzMLFile, false);
@@ -223,12 +324,10 @@ public class MzMLValidator extends Validator {
 // ---------------- Internal consistency check of the CvMappingRules ---------------- //
         try {
             // Validate CV Mapping Rules
-            addMessages(this.checkCvMappingRules(), this.msgL);
             if(this.gui != null) { // report progress to the GUI if present
-                progress = 0;
-                this.gui.initProgress(progress, 13, progress);
                 this.gui.setProgress(++progress, "Reading CV rules...");
             }
+            addMessages(this.checkCvMappingRules(), this.msgL);
             // See if the mapping makes sense.
             if(this.msgs.size() != 0) {
                 if(this.gui == null) {
@@ -246,10 +345,6 @@ public class MzMLValidator extends Validator {
 
 // ---------------- Validation work proper ---------------- //
 
-
-            // Do a schema validation first.
-            // Failure = auto-exit.
-            // @TODO schema validation!
 
             // Object rules that check internal Xrefs (e.g.: referenceableParamGroups and refs).
             // Failure = auto-exit.
@@ -330,7 +425,7 @@ public class MzMLValidator extends Validator {
     private void validateElement(String xpath, Class clazz) throws ValidatorException {
         MzMLObjectIterator<MzMLObject> mzMLIter;
         if(this.gui != null) {
-            this.gui.setProgress(++this.progress, "Validating " + xpath + "...");
+            this.gui.setProgress(++progress, "Validating " + xpath + "...");
         }
         mzMLIter = this.unmarshaller.unmarshalCollectionFromXpath(xpath, clazz);
         Collection<MzMLObject> toValidate = new ArrayList<MzMLObject>();
@@ -340,6 +435,36 @@ public class MzMLValidator extends Validator {
         addMessages( this.checkCvMapping(toValidate, xpath), this.msgL);
     }
 
+    private boolean isValidMzML(File mzML, URI schemaUri, Collection<ValidatorMessage> messages) throws SAXException {
+        boolean valid;
+
+        MzMLSchemaValidator mzMLValidator = new MzMLSchemaValidator();
+        MzMLValidationErrorHandler errorHandler = null;
+        try {
+            mzMLValidator.setSchema(schemaUri);
+            errorHandler = mzMLValidator.validate(new FileReader(mzML));
+        } catch (FileNotFoundException e) {
+            log.fatal("FATAL: Could not find the MzML instance file while trying to " +
+                    "validate it! Its exisence should have been checked before!", e);
+            System.exit(-1);
+        } catch (MalformedURLException e) {
+            log.fatal("FATAL: The MzML schema URI is not ");
+            // should not happen! since the MzMLValidator should check first if the
+            // schema URI is valid before trying to validate with it!
+            e.printStackTrace();
+            System.exit(-1);
+        }
+
+        // if we have no errors, the file is valid
+        if ( errorHandler.noErrors() ) {
+            valid = true;
+        } else {
+            messages.addAll(errorHandler.getErrorsAsValidatorMessages());
+            valid = false;
+        }
+
+        return valid;
+    }
 
     /**
      * Simple wrapper class to allow synchronisation on the hasNext() and next()

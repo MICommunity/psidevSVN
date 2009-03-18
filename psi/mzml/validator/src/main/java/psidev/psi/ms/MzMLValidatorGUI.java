@@ -21,6 +21,7 @@ import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.net.URI;
 /*
  * CVS information:
  *
@@ -310,18 +311,19 @@ public class MzMLValidatorGUI extends JPanel {
                         InputStream cvMapping = new FileInputStream("ms-mapping.xml");
                         InputStream codedRules = new FileInputStream("ObjectRules.xml");
                         validator = new MzMLValidator(ontology, cvMapping, codedRules);
-                        validator.setValidatorGUI( MzMLValidatorGUI.this );
-                        validator.setMessageReportLevel( getLevel() );
                         ontology.close();
                         cvMapping.close();
                         codedRules.close();
                     } else {
                         // reset all validator fields except the initialisation values (ontologies, object rules and cv mapping rules)
                         validator.reset();
-                        // set again the gui and reporting level
-                        validator.setValidatorGUI( MzMLValidatorGUI.this );
-                        validator.setMessageReportLevel( getLevel() );
                     }
+                    // common settings to set each time the validation button is pressed
+                    validator.setValidatorGUI( MzMLValidatorGUI.this );
+                    validator.setMessageReportLevel( getLevel() );
+                    validator.setSchemaUri( getSchemaUri() );
+                    validator.setSkipValidation( skipValidation() );
+                    
                     progress.setString("Indexing mzML file...");
                     messages.addAll( validator.startValidation(inputFile) );
                 } catch(Exception e) {
@@ -408,6 +410,17 @@ public class MzMLValidatorGUI extends JPanel {
         }
         return result;
     }
+
+    private URI getSchemaUri() {
+        // ToDo: implement
+        return validator.getSchemaUri();
+    }
+
+    private boolean skipValidation() {
+        // ToDo: implement
+        return false;
+    }
+
 
     public void notifyOfError(Exception e) {
         error = e;

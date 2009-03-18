@@ -32,6 +32,8 @@
                 </configuration>
             </plugin>
 
+            <!-- Additions Florian -->
+            <!-- To copy the dependencies from the maven repository to the lib directory -->
             <plugin>
                <groupId>org.apache.maven.plugins</groupId>
                <artifactId>maven-dependency-plugin</artifactId>
@@ -51,24 +53,81 @@
                  </execution>
                </executions>
             </plugin>
-            <!-- to create a executable jar to start the MzMLValidatorGUI -->
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-jar-plugin</artifactId>
-              <configuration>
-                <archive>
-                  <manifest>
-                    <mainClass>psidev.psi.ms.MzMLValidatorGUI</mainClass>
-                    <addClasspath>true</addClasspath>
-                    <classpathPrefix>${lib.dir}</classpathPrefix>
-                  </manifest>
-                </archive>
-              </configuration>
-            </plugin>
             <!-- Additions Florian -->
 
         </plugins>
     </build>
+
+    <!-- Additions Florian -->
+    <profiles>
+        <profile>
+            <id>gui</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <!-- to create a executable jar to start the MzMLValidatorGUI -->
+                    <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-jar-plugin</artifactId>
+                      <configuration>
+                        <archive>
+                          <manifest>
+                            <mainClass>psidev.psi.ms.MzMLValidatorGUI</mainClass>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>${lib.dir}</classpathPrefix>
+                          </manifest>
+                        </archive>
+                      </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>schemaValidation</id>
+            <build>
+                <plugins>
+                    <!-- to create a executable jar to start the MzMLSchemaValidator -->
+                    <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-jar-plugin</artifactId>
+                      <configuration>
+                        <archive>
+                          <manifest>
+                            <mainClass>psidev.psi.ms.MzMLSchemaValidator</mainClass>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>${lib.dir}</classpathPrefix>
+                          </manifest>
+                        </archive>
+                      </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>commandlineValidator</id>
+            <build>
+                <plugins>
+                    <!-- to create a executable jar to start the command line MzMLValidator -->
+                    <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-jar-plugin</artifactId>
+                      <configuration>
+                        <archive>
+                          <manifest>
+                            <mainClass>psidev.psi.ms.MzMLValidator</mainClass>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>${lib.dir}</classpathPrefix>
+                          </manifest>
+                        </archive>
+                      </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+    <!-- Additions Florian -->
 
     <repositories>
         <repository>
@@ -130,32 +189,9 @@
             <artifactId>jmzml</artifactId>
             <version>0.6-SNAPSHOT</version>
         </dependency>
-
-        <dependency>
-			<groupId>msv</groupId>
-			<artifactId>msv</artifactId>
-			<version>20050913</version>
-		</dependency>
-
-		<dependency>
-			<groupId>msv</groupId>
-			<artifactId>isorelax</artifactId>
-			<version>20050913</version>
-		</dependency>
-
-		<dependency>
-			<groupId>msv</groupId>
-			<artifactId>relaxngDatatype</artifactId>
-			<version>20050913</version>
-		</dependency>
-
-		<dependency>
-			<groupId>msv</groupId>
-			<artifactId>xsdlib</artifactId>
-			<version>20050913</version>
-		</dependency>
     </dependencies>
 
     <distributionManagement>
     </distributionManagement>
+
 </project>
