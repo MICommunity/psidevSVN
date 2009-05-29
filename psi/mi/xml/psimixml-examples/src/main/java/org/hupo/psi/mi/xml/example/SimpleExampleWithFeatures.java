@@ -1,15 +1,14 @@
 package org.hupo.psi.mi.xml.example;
 
-import psidev.psi.mi.xml.model.*;
 import psidev.psi.mi.xml.PsimiXmlVersion;
 import psidev.psi.mi.xml.PsimiXmlWriter;
+import psidev.psi.mi.xml.model.*;
 
-import java.util.Collection;
-import java.util.ArrayList;
-import java.io.StringWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Example to show how to generate PSI-MI XML files programmatically.
