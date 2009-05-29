@@ -15,12 +15,27 @@
         <dependency>
             <groupId>psidev.psi.mi</groupId>
             <artifactId>psi25-xml</artifactId>
-            <version>1.7.4</version>
+            <version>1.7.5-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.1.1</version>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
     <build>
         <defaultGoal>compile</defaultGoal>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 
     <profiles>
