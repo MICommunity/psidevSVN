@@ -14,9 +14,9 @@ import java.io.Writer;
 /**
  * Example to show how to generate PSI-MI XML files programmatically.
  *
- * The PsiFactory class is extensively used as it simplifies the instantiation of the model objects.
+ * Shows how to generate features too.
  */
-public class SimpleExample {
+public class SimpleExampleWithFeatures {
 
     public static void main(String[] args) throws Exception {
         File outputFile = new File("target/simpleExample.xml");
@@ -52,6 +52,14 @@ public class SimpleExample {
 
         Participant participantA = PsiFactory.createParticipant(proteinA, bioRoleEnzymeTarget, expRoleNeutral);
 
+        // a feature for participant A
+        FeatureType featureType = PsiFactory.createFeatureType("MI:0178", "o4'-phospho-tyrosine");
+        Range range = PsiFactory.createRangeCertain(118, 118);
+        Feature featurePhosphoTyr = PsiFactory.createFeature("tyr-118 ", featureType, range);
+
+        participantA.getFeatures().add(featurePhosphoTyr);
+        
+
         // protein B
         Interactor proteinB = PsiFactory.createInteractorUniprotProtein("P49023", human);
         BiologicalRole bioRoleEnzyme = PsiFactory.createBiologicalRole("P23470", "enzyme");
@@ -85,7 +93,7 @@ public class SimpleExample {
         Writer fileWriter = new FileWriter(outputFile);
 
         psimiXmlWriter.write(entrySet, fileWriter);
-        
+
         fileWriter.close();
 
     }
