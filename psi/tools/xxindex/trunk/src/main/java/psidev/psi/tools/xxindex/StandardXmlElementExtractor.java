@@ -1,9 +1,9 @@
 package psidev.psi.tools.xxindex;
 
-import cpdetector.io.ASCIIDetector;
-import cpdetector.io.CodepageDetectorProxy;
-import cpdetector.io.JChardetFacade;
-import cpdetector.io.ParsingDetector;
+import info.monitorenter.cpdetector.io.ASCIIDetector;
+import info.monitorenter.cpdetector.io.CodepageDetectorProxy;
+import info.monitorenter.cpdetector.io.JChardetFacade;
+import info.monitorenter.cpdetector.io.ParsingDetector;
 import psidev.psi.tools.xxindex.index.IndexElement;
 
 import java.io.*;
