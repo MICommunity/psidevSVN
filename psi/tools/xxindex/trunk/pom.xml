@@ -17,7 +17,7 @@
 
     <properties>
         <bundle.namespace>psidev.psi.tools.xxindex</bundle.namespace>
-        <bundle.symbolicName>psi-xxindex</bundle.symbolicName>
+        <bundle.symbolicName>psidev.psi.tools.xxindex</bundle.symbolicName>
     </properties>
 
     <scm>
