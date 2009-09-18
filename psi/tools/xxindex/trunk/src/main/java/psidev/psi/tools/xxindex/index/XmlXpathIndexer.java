@@ -86,7 +86,7 @@ public class XmlXpathIndexer {
      * @see this#buildIndex(java.io.InputStream)
      */
     public static StandardXpathIndex buildIndex(InputStream is, Set<String> aXpathInclusionSet, boolean recordLineNumber) throws IOException {
-        return buildIndex(is, aXpathInclusionSet, true, true);
+        return buildIndex(is, aXpathInclusionSet, recordLineNumber, true);
     }
 
     /**
@@ -171,11 +171,7 @@ public class XmlXpathIndexer {
                 }
             }
             if (read == '"' && recording) {
-                if (inQuote) {
-                    inQuote = false;
-                } else {
-                    inQuote = true;
-                }
+                inQuote = !inQuote;
             }
             if ( read == '>' && !inQuote ) {
                 stopPos = cis.getByteCount();
@@ -211,7 +207,8 @@ public class XmlXpathIndexer {
                     if ( !element.getName().equalsIgnoreCase(tagName) ) {
                         //ToDo: change to throw Exception, if this goes wrong, the index will be incorrect !!
                         StringBuilder sb = new StringBuilder( 256 );
-                        sb.append( "Tag name mismatch! Found '" + tagName + "' but '" + element.getName() + "' on stack." );
+                        sb.append("Tag name mismatch! Found '").append(tagName);
+                        sb.append("' but '").append(element.getName()).append("' on stack.");
                         sb.append( "\n State of the Stack:\n" );
                         ListIterator<TmpIndexElement> iter = stack.listIterator();
                         while (iter.hasNext()) {
