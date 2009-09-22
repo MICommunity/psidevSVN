@@ -11,7 +11,7 @@
     <groupId>psidev.psi.tools</groupId>
     <artifactId>xxindex</artifactId>
     <packaging>bundle</packaging>
-    <version>0.6</version>
+    <version>0.7-SNAPSHOT</version>
 
     <name>PSI :: Tools :: Xml XPath Indexer</name>
 
@@ -21,9 +21,9 @@
     </properties>
 
     <scm>
-        <connection>scm:svn:https://psidev.svn.sourceforge.net/svnroot/psidev/psi/tools/xxindex/tags/xxindex-0.6</connection>
-        <developerConnection>scm:svn:https://psidev.svn.sourceforge.net/svnroot/psidev/psi/tools/xxindex/tags/xxindex-0.6</developerConnection>
-        <url>https://psidev.svn.sourceforge.net/svnroot/psidev/psi/tools/xxindex/tags/xxindex-0.6</url>
+        <connection>scm:svn:https://psidev.svn.sourceforge.net/svnroot/psidev/psi/tools/xxindex/trunk</connection>
+        <developerConnection>scm:svn:https://psidev.svn.sourceforge.net/svnroot/psidev/psi/tools/xxindex/trunk</developerConnection>
+        <url>https://psidev.svn.sourceforge.net/svnroot/psidev/psi/tools/xxindex/trunk</url>
     </scm>
 
     <build>
