@@ -2,9 +2,9 @@ package psidev.psi.tools.xxindex;
 
 import psidev.psi.tools.xxindex.index.XpathIndex;
 
-import java.util.List;
-import java.util.Iterator;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Author: Florian Reisinger
@@ -15,6 +15,8 @@ public interface XpathAccess {
     public List<String> getXmlSnippets(String xpath) throws IOException;
 
     public Iterator<String> getXmlSnippetIterator(String xpath);
+
+    public Iterator<String> getXmlSnippetIterator(String xpath, Long start, Long stop);
 
     XpathIndex getIndex();
 }
