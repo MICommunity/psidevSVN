@@ -11,7 +11,7 @@
     <groupId>psidev.psi.tools</groupId>
     <artifactId>xxindex</artifactId>
     <packaging>bundle</packaging>
-    <version>0.7-SNAPSHOT</version>
+    <version>0.8-SNAPSHOT</version>
 
     <name>PSI :: Tools :: Xml XPath Indexer</name>
 
@@ -28,16 +28,6 @@
     </scm>
 
     <build>
-        <testResources>
-            <testResource>
-                <directory>src/test/resources</directory>
-                <includes>
-                    <include>*.xml</include>
-                    <include>testTagName/*.*</include>
-                </includes>
-            </testResource>
-        </testResources>
-
        <plugins>
             <plugin>
                 <groupId>org.ops4j</groupId>

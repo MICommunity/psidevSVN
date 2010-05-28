@@ -145,10 +145,10 @@ public class XmlXpathIndexer {
             oldRead = read; // save previous byte
             read = buf[0];
             // first keep track of all the line breaks, so we can count the line numbers
-            if (read == '\n') {
+            if (read == '\n') { // normal 'new line'
                 lineNum++;
             }
-            if (oldRead == '\r' && read != '\n') {
+            if (oldRead == '\r' && read != '\n') { // carriage return that is not covered by the previous 'new line'
                 lineNum++;
             }
             // now check for XML tags
@@ -159,8 +159,9 @@ public class XmlXpathIndexer {
                 read = buf[0];
                 if ( read == '!' || read == '?' ) {
                     // we don't bother with header and comments
-                    // read till next '<' WITHOUT recording
-                    // will also skip CDATA sections
+                    // read util the next '<' WITHOUT recording
+                    int skippedLines = skipSpecialSection(cis, buf);
+                    lineNum += skippedLines;
                     startPos = -1; // reset position
                 } else if ( read == '/' ) { // we have the start of a closing tag -> begin recording
                     closingTag = true;
@@ -220,6 +221,8 @@ public class XmlXpathIndexer {
                             sb.append("]\n");
                         }
                         log.error( sb.toString() );
+                        System.out.println(sb.toString());
+                        System.out.println("line number" + lineNum);
                         throw new IllegalStateException("Internal stack of XML tags was corrupted!");
                     }
                     element.setStop(stopPos);
@@ -235,6 +238,64 @@ public class XmlXpathIndexer {
         cis.close();
         is.close();
         return index;
+    }
+
+    /**
+     * This method will skip a special XML section. A section is regarded 'special' if
+     * the start tag starts with '<!' or '<![CD' (the start of a CDATA section). The end
+     * of the section is expected to be a simple '>' or in case of a CDATA section a ']]>'.
+     *
+     * @param cis the counting input stream we are operating on.
+     * @param buf the buffer to read (one byte at a time).
+     * @return the number of new lines we have skipped.
+     * @throws IOException in case of reading errors.
+     */
+    private static int skipSpecialSection(CountingInputStream cis, byte[] buf) throws IOException {
+        // we know we are in a special section (starting with '<!'), now we have to find its end
+        // this special section could be a xml header or even a CDATA section
+        int skippedLines = 0;
+
+        boolean possibleCDATA = false;
+        boolean cDATA = false;
+        // we know we have read first '<' and then '!', otherwise we would not have entered this method.
+        byte read = '!';
+        byte oldRead = '<';
+        byte veryOldRead;
+
+        while ( (nextByte(cis, buf)) != -1 ) {
+            veryOldRead = oldRead;
+            oldRead = read;
+            read = buf[0];
+            // check for line breaks that we pass
+            if (read == '\n') { // normal 'new line'
+                skippedLines++;
+            }
+            if (oldRead == '\r' && read != '\n') { // carriage return that is not covered by the previous 'new line'
+                skippedLines++;
+            }
+
+            // check if we have a CDATA section
+            if (read == '[' && oldRead == '!' && veryOldRead == '<') {
+                possibleCDATA = true;
+            }
+            if (read == 'D' && oldRead == 'C' && veryOldRead == '[' && possibleCDATA) {
+                cDATA = true;
+            }
+
+            // find the appropriate end of tag signal ('normal' = '>'; CDATA = ']]>'
+            // so, if we are in a CDATA section we can not stop at at single '>', but
+            // have to continue until we find ']]>'
+            if (cDATA) {
+                if (read == '>' && oldRead == ']' && veryOldRead == ']') {
+                    break;
+                } // else it is not a proper CDATA end.
+            } else if (read == '>') {
+                break;
+            }
+            // if we have not found a end signal, we continue skipping
+        }
+        // finally, when we are at the end of the skipped section, we return the number of lines we have skipped
+        return skippedLines;
     }
 
     ////////////////////

@@ -8,9 +8,7 @@ import java.io.InputStream;
 import java.io.FileInputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 import junit.framework.Assert;
 import org.junit.Test;
@@ -59,8 +57,8 @@ public class XmlXpathIndexerTest {
     }
 
     private String detectFileEncoding(String filename) throws IOException {
+        String result;
         URL url = XmlXpathIndexerTest.class.getResource(filename);
-        String result = null;
         StandardXmlElementExtractor xee = new StandardXmlElementExtractor();
         result = xee.detectFileEncoding( url );
         return result;
@@ -85,8 +83,7 @@ public class XmlXpathIndexerTest {
             String encoding = detectFileEncoding(s);
 
             // ----- index creation ------ //
-            StandardXpathIndex index = null;
-            index = XmlXpathIndexer.buildIndex( is );
+            StandardXpathIndex index = XmlXpathIndexer.buildIndex( is );
             is.close();
             Assert.assertNotNull( "Index was not created!", index );
 
@@ -147,8 +144,7 @@ public class XmlXpathIndexerTest {
             }
 
             // ----- index creation ------ //
-            XpathIndex index = null;
-            index = XmlXpathIndexer.buildIndex( is, xpathInclusionSet );
+            XpathIndex index = XmlXpathIndexer.buildIndex( is, xpathInclusionSet );
             is.close();
 
             Assert.assertNotNull( index );
@@ -212,8 +208,7 @@ public class XmlXpathIndexerTest {
         Assert.assertEquals( "UTF-8", encoding );
 
         InputStream is = XmlXpathIndexerTest.class.getResourceAsStream( fileResource );
-        XpathIndex index = null;
-        index = XmlXpathIndexer.buildIndex( is, null, true );
+        XpathIndex index = XmlXpathIndexer.buildIndex( is, null, true );
         is.close();
 
         Assert.assertNotNull( index );
@@ -225,4 +220,43 @@ public class XmlXpathIndexerTest {
         checkUniqueElementLineNumber( index, "/entrySet/entry/interactionList/interaction", 30 );
         checkUniqueElementLineNumber( index, "/entrySet/entry/interactionList/interaction/experimentList/experimentDescription", 36 );
     }
+
+
+    @Test
+    public void testCDATAHandling() throws IOException, URISyntaxException {
+
+        // A mzIdentML file usually contains regular expressions stored in XML CDATA sections
+        // Here we test a mzIdentML file that contains CDATA sections.
+
+        URL url = XmlXpathIndexerTest.class.getClassLoader().getResource("test-mzIdentML-CDATA.mzid");
+        Assert.assertNotNull("Test resource (test-mzIdentML-CDATA.mzid) not found.", url);
+
+        File xmlFile = new File(url.toURI());
+        Assert.assertTrue("Test file does not exist!", xmlFile.exists());
+
+        // check that the index creating works if there are CDATA sections
+        StandardXpathAccess access = new StandardXpathAccess(xmlFile);
+        Assert.assertNotNull(access);
+
+        // check if entries for all xpath have been created
+        XpathIndex index = access.getIndex();
+        Assert.assertEquals("Expected xpath", 109, index.getKeys().size());
+//        System.out.println("number of xpath: " + index.getKeys().size());
+//        for (String xpath : index.getKeys()) {
+//            System.out.println("xpath: " + xpath);
+//        }
+
+        // now check if new lines in CDATA sections are taken into account correctly
+        IndexElement ele1 = index.getElements("/mzIdentML/AnalysisProtocolCollection/SpectrumIdentificationProtocol/Enzymes/Enzyme").iterator().next();
+        // the first Enzyme element should start at line 748 (before any CDATA section)
+        Assert.assertEquals("Element not on expected line.", 748, ele1.getLineNumber());
+
+        IndexElement ele2 = index.getElements("/mzIdentML/AnalysisProtocolCollection/SpectrumIdentificationProtocol/MassTable").iterator().next();
+        // the first MassTable element should start at line 763 (after CDATA with line breaks)
+        Assert.assertEquals("Element not on expected line.", 766, ele2.getLineNumber());
+
+    }
+
+
+
 }
