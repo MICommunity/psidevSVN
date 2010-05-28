@@ -244,6 +244,7 @@ public class XmlXpathIndexer {
      * This method will skip a special XML section. A section is regarded 'special' if
      * the start tag starts with '<!' or '<![CD' (the start of a CDATA section). The end
      * of the section is expected to be a simple '>' or in case of a CDATA section a ']]>'.
+     * NOTE: this method assumes that the two previous characters read are '<' and '!'.
      *
      * @param cis the counting input stream we are operating on.
      * @param buf the buffer to read (one byte at a time).
