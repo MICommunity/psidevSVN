@@ -11,7 +11,7 @@
     <groupId>psidev.psi.tools</groupId>
     <artifactId>xxindex</artifactId>
     <packaging>bundle</packaging>
-    <version>0.8-SNAPSHOT</version>
+    <version>0.8</version>
 
     <name>PSI :: Tools :: Xml XPath Indexer</name>
 
