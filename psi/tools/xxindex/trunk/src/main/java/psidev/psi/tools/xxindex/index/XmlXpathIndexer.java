@@ -258,6 +258,8 @@ public class XmlXpathIndexer {
 
         boolean possibleCDATA = false;
         boolean cDATA = false;
+        boolean possibleComment = false;
+        boolean comment = false;
         // we know we have read first '<' and then '!', otherwise we would not have entered this method.
         byte read = '!';
         byte oldRead = '<';
@@ -282,7 +284,12 @@ public class XmlXpathIndexer {
             if (read == 'D' && oldRead == 'C' && veryOldRead == '[' && possibleCDATA) {
                 cDATA = true;
             }
-
+            if (read == '-' && oldRead == '!' && veryOldRead == '<') {
+                possibleComment = true;
+            }
+            if (read == '-' && oldRead == '-' && possibleComment) {
+                comment = true;
+            }
             // find the appropriate end of tag signal ('normal' = '>'; CDATA = ']]>'
             // so, if we are in a CDATA section we can not stop at at single '>', but
             // have to continue until we find ']]>'
@@ -290,6 +297,10 @@ public class XmlXpathIndexer {
                 if (read == '>' && oldRead == ']' && veryOldRead == ']') {
                     break;
                 } // else it is not a proper CDATA end.
+            } else if (comment) {
+                if (read == '>' && oldRead == '-' && veryOldRead == '-') {
+                    break;
+                }
             } else if (read == '>') {
                 break;
             }

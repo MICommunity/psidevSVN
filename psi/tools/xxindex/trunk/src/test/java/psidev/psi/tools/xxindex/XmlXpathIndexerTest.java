@@ -1,17 +1,20 @@
 package psidev.psi.tools.xxindex;
 
-import psidev.psi.tools.xxindex.index.*;
+import junit.framework.Assert;
+import org.junit.Test;
+import psidev.psi.tools.xxindex.index.IndexElement;
+import psidev.psi.tools.xxindex.index.StandardXpathIndex;
+import psidev.psi.tools.xxindex.index.XmlXpathIndexer;
+import psidev.psi.tools.xxindex.index.XpathIndex;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.FileInputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.*;
-
-import junit.framework.Assert;
-import org.junit.Test;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * Author: Florian Reisinger
@@ -19,14 +22,11 @@ import org.junit.Test;
  */
 public class XmlXpathIndexerTest {
 
-    boolean DEBUG = false;
-
     ////////////////////
     // Utilities
 
     private String readByteRange( long from, long to, String filename, String encoding ) throws Exception {
         URL url = XmlXpathIndexerTest.class.getResource( filename );
-        String result = null;
         File f = new File( url.toURI() );
         StandardXmlElementExtractor xee = new StandardXmlElementExtractor();
         xee.setEncoding( encoding );
@@ -257,6 +257,35 @@ public class XmlXpathIndexerTest {
 
     }
 
+    @Test
+    public void testCommentHandling() throws IOException, URISyntaxException {
+        
+        // A XML file can contain comments between <!-- and -->
+        // Here we test a XML file that contains comments (one line and multi-line).
+
+        String fileName = "test-comments.xml";
+        URL url = XmlXpathIndexerTest.class.getClassLoader().getResource(fileName);
+        Assert.assertNotNull("Test resource (" + fileName + ") not found.", url);
+
+        File xmlFile = new File(url.toURI());
+        Assert.assertTrue("Test file does not exist!", xmlFile.exists());
+
+        // check that the index creating works if there are CDATA sections
+        StandardXpathAccess access = new StandardXpathAccess(xmlFile);
+        Assert.assertNotNull(access);
+
+        // check if entries for all xpath have been created
+        XpathIndex index = access.getIndex();
+        Assert.assertNotNull(index);
+
+        // one <third> element (including a <fourth> element) has been commented out!
+        int thirdCnt = index.getElementCount("/first/second/third");
+        Assert.assertEquals(4, thirdCnt);
+
+        int fourthCnt = index.getElementCount("/first/second/third/fourth");
+        Assert.assertEquals(5, fourthCnt);
+
+    }
 
 
 }
