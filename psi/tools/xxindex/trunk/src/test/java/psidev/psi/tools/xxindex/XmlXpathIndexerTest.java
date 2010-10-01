@@ -288,4 +288,37 @@ public class XmlXpathIndexerTest {
     }
 
 
+    @Test
+    public void testCDATAandCommentHandling() throws IOException, URISyntaxException {
+
+        // A XML file can contain comments between <!-- and -->
+        // Here we test a XML file that contains comments (one line and multi-line).
+
+        String fileName = "test-cdata.xml";
+        URL url = XmlXpathIndexerTest.class.getClassLoader().getResource(fileName);
+        Assert.assertNotNull("Test resource (" + fileName + ") not found.", url);
+
+        File xmlFile = new File(url.toURI());
+        Assert.assertTrue("Test file does not exist!", xmlFile.exists());
+
+        // check that the index creating works if there are CDATA sections
+        StandardXpathAccess access = new StandardXpathAccess(xmlFile);
+        Assert.assertNotNull(access);
+
+        // check if entries for all xpath have been created
+        XpathIndex index = access.getIndex();
+        Assert.assertNotNull(index);
+
+        // one <third> element (including a <fourth> element) has been commented out!
+        int thirdCnt = index.getElementCount("/first/second/third");
+        Assert.assertEquals(4, thirdCnt);
+
+        int fourthCnt = index.getElementCount("/first/second/third/fourth");
+        Assert.assertEquals(5, fourthCnt);
+
+        int regexCnt = index.getElementCount("/first/second/SiteRegexp");
+        Assert.assertEquals(1, regexCnt);
+
+    }
+
 }
