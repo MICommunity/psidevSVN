@@ -5,12 +5,11 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.InputStream;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import psidev.psi.tools.xxindex.StandardXmlElementExtractor;
+import psidev.psi.tools.xxindex.SimpleXmlElementExtractor;
 
 /**
  * @author: florian
@@ -29,9 +28,11 @@ public class EncodingTest {
             StandardXpathIndex index = XmlXpathIndexer.buildIndex(is);
             IndexElement range = index.getElements("/first/second/third/fourth").get(1);
 
-            StandardXmlElementExtractor xee = new StandardXmlElementExtractor();
-            xee.setEncoding(xee.detectFileEncoding(url));
-            xee.setCompareWithDetect(true);
+            SimpleXmlElementExtractor xee = new SimpleXmlElementExtractor();
+            String encoding = xee.detectFileEncoding(url);
+            if (encoding != null) {
+                xee.setEncoding(encoding);
+            }
             String xmlSnippet = xee.readString(range.getStart(), range.getStop(), new File(url.toURI()));
             Assert.assertTrue( xmlSnippet.startsWith("<fourth>"));
             Assert.assertTrue( xmlSnippet.endsWith("</fourth>"));

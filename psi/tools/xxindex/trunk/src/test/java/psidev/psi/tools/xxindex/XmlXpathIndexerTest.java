@@ -28,8 +28,10 @@ public class XmlXpathIndexerTest {
     private String readByteRange( long from, long to, String filename, String encoding ) throws Exception {
         URL url = XmlXpathIndexerTest.class.getResource( filename );
         File f = new File( url.toURI() );
-        StandardXmlElementExtractor xee = new StandardXmlElementExtractor();
-        xee.setEncoding( encoding );
+        SimpleXmlElementExtractor xee = new SimpleXmlElementExtractor();
+        if (encoding != null) {
+            xee.setEncoding( encoding );
+        }
         return xee.readString( from, to, f );
     }
 
@@ -59,7 +61,7 @@ public class XmlXpathIndexerTest {
     private String detectFileEncoding(String filename) throws IOException {
         String result;
         URL url = XmlXpathIndexerTest.class.getResource(filename);
-        StandardXmlElementExtractor xee = new StandardXmlElementExtractor();
+        SimpleXmlElementExtractor xee = new SimpleXmlElementExtractor();
         result = xee.detectFileEncoding( url );
         return result;
     }
@@ -133,10 +135,12 @@ public class XmlXpathIndexerTest {
             InputStream is = XmlXpathIndexerTest.class.getResourceAsStream(s);
             String encoding = detectFileEncoding(s);
 
-            if( s.contains( "utf8" ) ) {
+            if ( s.contains("wo-header") ) {
+                Assert.assertNull(s, encoding);
+            } else if( s.contains( "utf8" ) ) {
                 Assert.assertEquals( s, "UTF-8", encoding );
             } else if( s.contains( "ascii" ) ) {
-                Assert.assertEquals( s, "US-ASCII", encoding );
+                Assert.assertEquals( s, "ASCII", encoding );
             } else if( s.contains( "win1252" ) ) {
                 Assert.assertEquals( s, "windows-1252", encoding );
             } else {

@@ -71,9 +71,11 @@ public class StandardXpathAccess implements XpathAccess {
     public StandardXpathAccess( File file, Set<String> aXpathInclusionSet, boolean recordLineNumbers ) throws IOException {
         this.file = file;
         this.index = XmlXpathIndexer.buildIndex( new FileInputStream( file ), aXpathInclusionSet, recordLineNumbers );
-        this.extractor = new StandardXmlElementExtractor();
+        this.extractor = new SimpleXmlElementExtractor();
         String enc = extractor.detectFileEncoding( file.toURI().toURL() );
-        extractor.setEncoding( enc );
+        if (enc != null) {
+            extractor.setEncoding( enc );
+        }
     }
 
     ////////////////////

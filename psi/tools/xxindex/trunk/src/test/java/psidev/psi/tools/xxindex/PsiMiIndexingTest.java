@@ -61,7 +61,7 @@ public class PsiMiIndexingTest {
         Assert.assertEquals( 10, index.getElementCount( "/entrySet/entry/interactionList/interaction/participantList/participant/featureList/feature" ) );
 
         // now let's extract a few stuffs
-        StandardXmlElementExtractor xee = new StandardXmlElementExtractor();
+        SimpleXmlElementExtractor xee = new SimpleXmlElementExtractor();
         final List<IndexElement> ranges = index.getElements( "/entrySet/entry/interactionList/interaction" );
         Assert.assertEquals( 7, ranges.size() );
         final IndexElement element = ranges.get( 0 );

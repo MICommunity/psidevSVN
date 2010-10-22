@@ -20,6 +20,7 @@ import org.apache.commons.logging.LogFactory;
  * Author: Florian Reisinger
  * Date: 24-Jul-2007
  */
+@Deprecated
 public class StandardXmlElementExtractor implements XmlElementExtractor {
 
     private static final Log log = LogFactory.getLog( StandardXmlElementExtractor.class );
