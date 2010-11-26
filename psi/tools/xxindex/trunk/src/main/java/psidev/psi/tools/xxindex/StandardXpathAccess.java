@@ -1,10 +1,8 @@
 package psidev.psi.tools.xxindex;
 
-import psidev.psi.tools.xxindex.index.IndexElement;
-import psidev.psi.tools.xxindex.index.XmlElement;
-import psidev.psi.tools.xxindex.index.XmlXpathIndexer;
-import psidev.psi.tools.xxindex.index.XpathIndex;
+import psidev.psi.tools.xxindex.index.*;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -200,6 +198,55 @@ public class StandardXpathAccess implements XpathAccess {
      */
     public int getXmlElementCount( String xpath ) {
         return index.getElementCount( xpath );
+    }
+
+    /**
+     * A method to extract the start tag only of a XML element.
+     * Note: that the start tag includes all the XML element attributes.
+     * This method provides therefore access to the XML element attributes
+     * without the need of reading the whole element (start tag to stop tag).
+     *
+     * @param element the IndexElement defining the XML element.
+     * @return a String of the full start tag.
+     * @throws java.io.IOException in case of reading errors from the underlying XML file.
+     */
+    public String getStartTag(IndexElement element) throws IOException {
+        String startTag = null;
+        // start reading (byte by byte) from the start position, until we find
+        // the end of the start tag (">"). Then return the complete start tag
+        // (including all the attributes)
+
+        FileInputStream fis = null;
+        BufferedInputStream bis = null;
+        try {
+            fis = new FileInputStream(file);
+            fis.getChannel().position(element.getStart());
+            bis = new BufferedInputStream(fis);
+
+            boolean stopFound = false;
+            ByteBuffer bb = new ByteBuffer();
+            byte[] buffer = new byte[1];
+            byte read;
+            while (!stopFound) {
+                bis.read(buffer);
+                read = buffer[0];
+                bb.append(read);
+                if (read == '>') {
+                    stopFound = true;
+                }
+            }
+            startTag = bb.toString("ASCII");
+
+        } finally {
+            try {
+                if (fis != null) { fis.close(); }
+                if (bis != null) { bis.close(); }
+            } catch (IOException e) {
+                // ignore
+            }
+        }
+
+        return startTag;
     }
 
     /**
