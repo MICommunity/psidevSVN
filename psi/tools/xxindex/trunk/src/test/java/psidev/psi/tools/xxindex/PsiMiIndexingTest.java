@@ -21,8 +21,7 @@ import psidev.psi.tools.xxindex.index.IndexElement;
 import psidev.psi.tools.xxindex.index.StandardXpathIndex;
 import psidev.psi.tools.xxindex.index.XmlXpathIndexer;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.*;
 import java.util.List;
 
 /**
@@ -66,5 +65,82 @@ public class PsiMiIndexingTest {
         Assert.assertEquals( 7, ranges.size() );
         final IndexElement element = ranges.get( 0 );
         final String xml = xee.readString( element, file );
+    }
+
+
+    public static InputStream extractXmlSnippet( FileInputStream fis,
+                                                 IndexElement range ) throws IOException {
+
+        if( range == null ) {
+            throw new IllegalArgumentException( "You must give a non null InputStreamRange." );
+        }
+
+            // Calculate how many char do we need to read.
+            int charCount = ( int ) ( range.getStop() - range.getStart() -1  );
+
+            // Position the stream
+            fis.getChannel().position( range.getStart() );
+            InputStreamReader isr = new InputStreamReader( fis );
+            char[] buf = new char[charCount];
+            int read = isr.read( buf, 0, charCount );
+
+            // Build an InputStream with this
+            StringBuilder sb = new StringBuilder( charCount );
+            for ( int i = 0; i < buf.length; i++ ) {
+                char c = buf[i];
+                sb.append( c );
+            }
+
+            System.out.println("XML DATA:\n"+sb.toString());
+
+            return new ByteArrayInputStream( sb.toString().getBytes() );
+    }
+
+
+    @Test
+    public void marine() throws Exception {
+
+
+        File file = new File( "/home/marine/Desktop/intact-Sandbox-trenches/psiEnriched-1268405139786.xml" );
+
+        final StandardXpathIndex index = XmlXpathIndexer.buildIndex( new FileInputStream( file ) );
+        Assert.assertNotNull( index );
+
+        Assert.assertFalse( index.containsXpath( "/foobar" ) );
+
+        Assert.assertTrue( index.containsXpath( "/entrySet" ) );
+        Assert.assertTrue( index.containsXpath( "/entrySet/entry" ) );
+        Assert.assertTrue( index.containsXpath( "/entrySet/entry/interactionList/interaction" ) );
+        Assert.assertTrue( index.containsXpath( "/entrySet/entry/interactionList/interaction/participantList/participant" ) );
+        Assert.assertTrue( index.containsXpath( "/entrySet/entry/interactionList/interaction/participantList/participant/featureList/feature" ) );
+
+        // check that main elements have been indexed
+//        Assert.assertEquals( 0, index.getElementCount( "/entrySet/entry/experimentList/experimentDescription" ));
+//        Assert.assertEquals( 0, index.getElementCount( "/entrySet/entry/interactorList/interactor" ));
+        Assert.assertEquals( 7, index.getElementCount( "/entrySet/entry/interactionList/interaction" ) );
+        Assert.assertEquals( 14, index.getElementCount( "/entrySet/entry/interactionList/interaction/participantList/participant" ) );
+
+        // now let's extract a few stuffs
+        StandardXmlElementExtractor xee = new StandardXmlElementExtractor();
+        final List<IndexElement> ranges = index.getElements( "/entrySet/entry/interactionList/interaction" );
+        Assert.assertEquals( 7, ranges.size() );
+        final IndexElement element = ranges.get( 0 );
+        final String xml = xee.readString( element, file );
+
+        System.out.println("========================================================");
+        System.out.println(xml);
+        System.out.println("========================================================");
+
+
+        List<IndexElement> interactions = index.getElements("/entrySet/entry/interactionList/interaction");
+        for (IndexElement interaction : interactions) {
+            System.out.println("interaction["+ interaction.getStart() +","+ interaction.getStop() +"]");
+
+            extractXmlSnippet(new FileInputStream( file ), interaction );
+
+            System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        }
     }
 }
