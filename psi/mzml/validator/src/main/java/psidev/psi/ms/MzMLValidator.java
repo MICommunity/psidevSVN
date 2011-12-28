@@ -75,10 +75,8 @@ public class MzMLValidator extends Validator {
 	private List<String> cvMappingRulesToSkip = new ArrayList<String>();
 	private ExtendedValidatorReport extendedReport;
 
-	// Constructor that passes the 3 configuration files to the generic
-	// validator:
 	public MzMLValidator(InputStream aOntologyConfig, String aCvMappingFile, String aCodedRuleFile,
-			RuleFilterManager ruleFilterManager, MzMLValidatorGUI validatroGUI)
+			RuleFilterManager ruleFilterManager, MzMLValidatorGUI validatorGUI)
 			throws ValidatorException, OntologyLoaderException, FileNotFoundException,
 			CvRuleReaderException {
 		super(aOntologyConfig);
@@ -96,7 +94,7 @@ public class MzMLValidator extends Validator {
 		}
 
 		// set the gui
-		this.setValidatorGUI(validatroGUI);
+		this.setValidatorGUI(validatorGUI);
 
 		// set the ruleFilterManager
 		this.ruleFilterManager = ruleFilterManager;
@@ -183,12 +181,6 @@ public class MzMLValidator extends Validator {
 			throws ValidatorException {
 		return null;
 	}
-
-	// @Override
-	// public Collection<ValidatorMessage> validate(Collection<?> col) throws
-	// ValidatorException {
-	// return this.validate(col);
-	// }
 
 	@Override
 	public Collection<ValidatorMessage> validate(Object objectToCheck) throws ValidatorException {
@@ -754,9 +746,9 @@ public class MzMLValidator extends Validator {
 				list.add(validatorMessage);
 				this.msgs.put(ruleId, list);
 			}
-			extendedReport.setRuleAsInvalid(ruleId);
+			this.extendedReport.setRuleAsInvalid(ruleId);
 		} else {
-			extendedReport.setRuleAsSkipped(ruleId);
+			this.extendedReport.setRuleAsSkipped(ruleId);
 		}
 	}
 
@@ -1008,6 +1000,10 @@ public class MzMLValidator extends Validator {
 		this.unmarshaller = null;
 		// reset the progress counter
 		this.progress = 0;
+
+		// restart the rules to skip
+		this.objectRulesToSkip = new ArrayList<String>();
+		this.cvMappingRulesToSkip = new ArrayList<String>();
 
 		// delete all objectRules
 		this.getObjectRules().clear();
