@@ -127,21 +127,23 @@ public class ExtendedValidatorReport extends ValidatorReport {
 	 * @return
 	 */
 	private CvRule getCvRuleById(String ruleId) {
-		for (CvRule cvRule : this.getCvRulesInvalidXpath()) {
-			if (cvRule.getId().equals(ruleId))
-				return cvRule;
-		}
-		for (CvRule cvRule : this.getCvRulesNotChecked()) {
-			if (cvRule.getId().equals(ruleId))
-				return cvRule;
-		}
-		for (CvRule cvRule : this.getCvRulesValid()) {
-			if (cvRule.getId().equals(ruleId))
-				return cvRule;
-		}
-		for (CvRule cvRule : this.getCvRulesValidXpath()) {
-			if (cvRule.getId().equals(ruleId))
-				return cvRule;
+		if (ruleId != null) {
+			for (CvRule cvRule : this.getCvRulesInvalidXpath()) {
+				if (ruleId.equals(cvRule.getId()))
+					return cvRule;
+			}
+			for (CvRule cvRule : this.getCvRulesNotChecked()) {
+				if (ruleId.equals(cvRule.getId()))
+					return cvRule;
+			}
+			for (CvRule cvRule : this.getCvRulesValid()) {
+				if (ruleId.equals(cvRule.getId()))
+					return cvRule;
+			}
+			for (CvRule cvRule : this.getCvRulesValidXpath()) {
+				if (ruleId.equals(cvRule.getId()))
+					return cvRule;
+			}
 		}
 		return null;
 	}
@@ -153,17 +155,19 @@ public class ExtendedValidatorReport extends ValidatorReport {
 	 * @return
 	 */
 	private ObjectRule getObjectRuleById(String ruleId) {
-		for (ObjectRule objectRule : this.objectRulesInvalid) {
-			if (objectRule.getId().equals(ruleId))
-				return objectRule;
-		}
-		for (ObjectRule objectRule : this.objectRulesNotChecked) {
-			if (objectRule.getId().equals(ruleId))
-				return objectRule;
-		}
-		for (ObjectRule objectRule : this.objectRulesValid) {
-			if (objectRule.getId().equals(ruleId))
-				return objectRule;
+		if (ruleId != null) {
+			for (ObjectRule objectRule : this.objectRulesInvalid) {
+				if (ruleId.equals(objectRule.getId()))
+					return objectRule;
+			}
+			for (ObjectRule objectRule : this.objectRulesNotChecked) {
+				if (ruleId.equals(objectRule.getId()))
+					return objectRule;
+			}
+			for (ObjectRule objectRule : this.objectRulesValid) {
+				if (ruleId.equals(objectRule.getId()))
+					return objectRule;
+			}
 		}
 		return null;
 	}
