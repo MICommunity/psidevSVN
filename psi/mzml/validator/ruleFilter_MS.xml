@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ruleFilter xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://proteo.cnb.csic.es/miape-api/schemas/ruleFilter_v1.1.xsd">
+<ruleFilter xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://proteo.cnb.csic.es/miape-api/schemas/ruleFilter_v1.2.xsd">
 	<userConditions>
 		<userCondition id="MALDI_OR_ESI">
 			<userOption id="MALDI">
@@ -48,4 +48,12 @@
 			<objectRuleToSkip id="LaserWavelengthObjectRule"/>
 		</referencedRules>
 	</references>
+	<mandatoryElements>
+		<mzMLElement mzMLElement="FileDescription"/>
+		<mzMLElement mzMLElement="Software"/>
+		<mzMLElement mzMLElement="InstrumentConfiguration"/>
+		<mzMLElement mzMLElement="DataProcessingList"/>
+		<mzMLElement mzMLElement="SourceFileList"/>
+		<mzMLElement mzMLElement="SourceComponent"/>
+	</mandatoryElements>
 </ruleFilter>
