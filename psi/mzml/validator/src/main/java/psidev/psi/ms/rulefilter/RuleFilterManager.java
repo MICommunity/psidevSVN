@@ -2,6 +2,7 @@ package psidev.psi.ms.rulefilter;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -10,8 +11,11 @@ import java.util.Set;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
+import psidev.psi.ms.ExtendedValidatorReport;
 import psidev.psi.ms.rulefilter.jaxb.CvMappingRuleCondition;
 import psidev.psi.ms.rulefilter.jaxb.CvMappingRuleToSkip;
+import psidev.psi.ms.rulefilter.jaxb.MandatoryMzIdentMLElement;
+import psidev.psi.ms.rulefilter.jaxb.MandatoryMzMLElement;
 import psidev.psi.ms.rulefilter.jaxb.ObjectRuleCondition;
 import psidev.psi.ms.rulefilter.jaxb.ObjectRuleToSkip;
 import psidev.psi.ms.rulefilter.jaxb.ReferencedRules;
@@ -19,13 +23,24 @@ import psidev.psi.ms.rulefilter.jaxb.RuleFilter;
 import psidev.psi.ms.rulefilter.jaxb.RulesToSkipRef;
 import psidev.psi.ms.rulefilter.jaxb.UserCondition;
 import psidev.psi.ms.rulefilter.jaxb.UserOption;
+import psidev.psi.tools.validator.ValidatorMessage;
+import psidev.psi.tools.validator.rules.codedrule.ObjectRule;
+import psidev.psi.tools.validator.rules.cvmapping.CvRule;
 
+/**
+ * This class provides the methods to maintain a list of object rules and a list
+ * of cv mapping rules to skip. Its behaviour is configured by a configuration
+ * xml file (following the schema:
+ * http://proteo.cnb.csic.es/miape-api/schemas/ruleFilter_v1.2.xsd)
+ * 
+ * @author Salva
+ * 
+ */
 public class RuleFilterManager {
-
-	// END CONDITIONS AND OPTIONS
-
 	private JAXBContext jc;
 	private RuleFilter filter = null;
+	private List<String> objectRulesToSkip = new ArrayList<String>();
+	private List<String> cvMappingRulesToSkip = new ArrayList<String>();
 
 	public RuleFilterManager(File xmlFile) throws JAXBException {
 		// check if null
@@ -49,12 +64,36 @@ public class RuleFilterManager {
 	}
 
 	/**
+	 * Gets a list of mandatory elements
+	 * 
+	 * @return
+	 */
+	public List<String> getMandatoryElements() {
+		List<String> ret = new ArrayList<String>();
+		if (filter.getMandatoryElements() != null) {
+			for (MandatoryMzIdentMLElement mandatoryElement : filter.getMandatoryElements()
+					.getMandatoryMzIdentMLElement()) {
+				final String mzIdentMLElement = mandatoryElement.getMzIdentMLElement();
+				if (mzIdentMLElement != null && !"".equals(mzIdentMLElement))
+					ret.add(mzIdentMLElement);
+			}
+			for (MandatoryMzMLElement mandatoryElement : filter.getMandatoryElements()
+					.getMandatoryMzMLElement()) {
+				final String mzMLElement = mandatoryElement.getMzMLElement();
+				if (mzMLElement != null && !"".equals(mzMLElement))
+					ret.add(mzMLElement);
+			}
+		}
+		return ret;
+	}
+
+	/**
 	 * Look for the chosen options in the rule filter file and returns a list
 	 * with the identifiers of the rules to exclude
 	 * 
 	 * @param selectedOptions
 	 *            : the key is the identifier of the condition and the value is
-	 *            the choosed option
+	 *            the chosen option
 	 * @return the list of identifiers of rules to exclude
 	 */
 	public Set<String> getCVMappingRulesToSkipByUserOptions(HashMap<String, String> selectedOptions) {
@@ -121,7 +160,7 @@ public class RuleFilterManager {
 	 * 
 	 * @param selectedOptions
 	 *            : the key is the identifier of the condition and the value is
-	 *            the choosed option
+	 *            the chosen option
 	 * @return the list of identifiers of rules to exclude
 	 */
 	public Set<String> getObjectRulesToSkipByUserOptions(HashMap<String, String> selectedOptions) {
@@ -169,7 +208,7 @@ public class RuleFilterManager {
 		return ret;
 	}
 
-	public List<String> getObjectRulesToSkipByObjectRule(String ruleId, boolean valid) {
+	private List<String> getObjectRulesToSkipByObjectRule(String ruleId, boolean valid) {
 		List<String> ret = new ArrayList<String>();
 
 		if (this.filter.getObjectRuleConditions() != null) {
@@ -191,7 +230,7 @@ public class RuleFilterManager {
 		return ret;
 	}
 
-	public List<String> getCvMappingRulesToSkipByObjectRule(String ruleId, boolean valid) {
+	private List<String> getCvMappingRulesToSkipByObjectRule(String ruleId, boolean valid) {
 		List<String> ret = new ArrayList<String>();
 
 		if (this.filter.getObjectRuleConditions() != null) {
@@ -252,5 +291,174 @@ public class RuleFilterManager {
 			}
 		}
 		return ret;
+	}
+
+	/**
+	 * Add a collection of cv mapping rules identifiers to the list of cv
+	 * mapping rules to skip
+	 * 
+	 * @param cvMappingRulesIdentifiers
+	 */
+	public void addCvMappingRulesToSkip(Collection<String> cvMappingRulesIdentifiers) {
+		for (String cvRuleIdentifier : cvMappingRulesIdentifiers) {
+			this.cvMappingRulesToSkip.add(cvRuleIdentifier);
+		}
+	}
+
+	/**
+	 * Add a collection of object rules identifiers to the list of object rules
+	 * to skip
+	 * 
+	 * @param objectRulesIdentifiers
+	 */
+	public void addObjectRulesToSkip(Collection<String> objectRulesIdentifiers) {
+		for (String objectRuleIdentifier : objectRulesIdentifiers) {
+			this.objectRulesToSkip.add(objectRuleIdentifier);
+		}
+	}
+
+	/**
+	 * Add a CvRule to the collection of cv mapping rules to skip
+	 * 
+	 * @param cvMappingRule
+	 */
+	public void addCvMappingRuleToSkip(CvRule cvMappingRule) {
+		this.cvMappingRulesToSkip.add(cvMappingRule.getId());
+	}
+
+	/**
+	 * Add an object rule to the collection of object rules to skip
+	 * 
+	 * @param objectRule
+	 */
+	public void addObjectRuleToSkip(ObjectRule objectRule) {
+		this.objectRulesToSkip.add(objectRule.getId());
+	}
+
+	/**
+	 * Gets the list of identifiers of object rules to skip
+	 * 
+	 * @return
+	 */
+	public List<String> getObjectRulesToSkip() {
+		return objectRulesToSkip;
+	}
+
+	/**
+	 * Gets the list of identifiers of cv mapping rules to skip
+	 * 
+	 * @return
+	 */
+	public List<String> getCvMappingRulesToSkip() {
+		return cvMappingRulesToSkip;
+	}
+
+	/**
+	 * Check if it is necessary to add some rules to skip since the result of
+	 * the execution of a cvRule
+	 * 
+	 * @param rule
+	 * @param valid
+	 *            if the rule has been passed or not
+	 */
+	public void updateRulesToSkipByCvMappingRuleResult(CvRule rule, boolean valid) {
+		// get cvMappingRules that should be skipped
+		final List<String> cvMappingRulesToSkipByCvMappingRule = this
+				.getCvMappingRulesToSkipByCvMappingRule(rule.getId(), valid);
+		if (cvMappingRulesToSkipByCvMappingRule != null
+				&& !cvMappingRulesToSkipByCvMappingRule.isEmpty())
+			this.addCvMappingRulesToSkip(cvMappingRulesToSkipByCvMappingRule);
+
+		// get objectRules that should be skipped
+		final List<String> objectRulesToSkipByCvMappingRule = this
+				.getObjectRulesToSkipByCvMappingRule(rule.getId(), valid);
+		if (objectRulesToSkipByCvMappingRule != null && !objectRulesToSkipByCvMappingRule.isEmpty())
+			this.addObjectRulesToSkip(objectRulesToSkipByCvMappingRule);
+	}
+
+	/**
+	 * Check if it is necessary to add some rules to skip since the result of
+	 * the execution of a object rule
+	 * 
+	 * @param rule
+	 * @param valid
+	 *            if the rule has been passed or not
+	 */
+	public void updateRulesToSkipByObjectRuleResult(ObjectRule rule, boolean valid) {
+		// get objectRules that should be skipped
+		List<String> objectRulesToSkip = this.getObjectRulesToSkipByObjectRule(rule.getId(), valid);
+		if (objectRulesToSkip != null && !objectRulesToSkip.isEmpty()) {
+			this.objectRulesToSkip.addAll(objectRulesToSkip);
+		}
+		// get cvMappingRules that should be skipped
+		List<String> cvMappingRulesToSkip = this.getCvMappingRulesToSkipByObjectRule(rule.getId(),
+				valid);
+		if (cvMappingRulesToSkip != null && !cvMappingRulesToSkip.isEmpty()) {
+			this.cvMappingRulesToSkip.addAll(objectRulesToSkip);
+		}
+
+	}
+
+	/**
+	 * Restarts the list of rules to skip
+	 */
+	public void restartRulesToSkip() {
+		// restart the rules to skip
+		this.objectRulesToSkip = new ArrayList<String>();
+		this.cvMappingRulesToSkip = new ArrayList<String>();
+	}
+
+	/**
+	 * Depending of the user selections some object and cvMapping rules will be
+	 * tagged to be skipped in the validator
+	 * 
+	 * @param selectedOptions
+	 *            a set of pairs key, value, where the key is the identifier of
+	 *            the condition and the value is the name of the chosen option
+	 */
+	public void filterRulesByUserOptions(HashMap<String, String> selectedOptions) {
+
+		// get cv mapping identifiers to exclude
+		this.addCvMappingRulesToSkip(getCVMappingRulesToSkipByUserOptions(selectedOptions));
+
+		// get object rules identifiers to exclude
+		this.addObjectRulesToSkip(getObjectRulesToSkipByUserOptions(selectedOptions));
+	}
+
+	/**
+	 * Filters the list of ValidatorMessages checking each message with the
+	 * lists of rules to skip and return the final list of messages
+	 * 
+	 * @return the collection of validation messages after the filter
+	 */
+	public Collection<ValidatorMessage> filterValidatorMessages(
+			HashMap<String, List<ValidatorMessage>> msgs, ExtendedValidatorReport extendedReport) {
+		ArrayList<ValidatorMessage> finalMessages = new ArrayList<ValidatorMessage>();
+
+		if (msgs != null && !msgs.isEmpty()) {
+
+			for (String ruleIdentifier : msgs.keySet()) {
+				boolean report = true;
+				// if the rule that generated the messages is in the list of
+				// rules to skip, not add to the final message list
+				if (this.getObjectRulesToSkip() != null
+						&& this.getObjectRulesToSkip().contains(ruleIdentifier))
+					report = false;
+
+				// if the rule that generated the messages is in the list of
+				// rules to skip, not add to the final message list
+				if (this.getCvMappingRulesToSkip() != null
+						&& this.getCvMappingRulesToSkip().contains(ruleIdentifier))
+					report = false;
+
+				if (report) {
+					finalMessages.addAll(msgs.get(ruleIdentifier));
+				} else {
+					// move the rule to the list of non checked rules
+					extendedReport.setRuleAsSkipped(ruleIdentifier);
+				}
+			}
+		}
+		return finalMessages;
 	}
 }

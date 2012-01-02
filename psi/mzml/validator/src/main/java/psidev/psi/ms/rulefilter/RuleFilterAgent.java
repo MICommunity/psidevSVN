@@ -6,9 +6,9 @@ import psidev.psi.ms.rulefilter.jaxb.UserCondition;
 import psidev.psi.ms.rulefilter.jaxb.UserOption;
 
 /**
- * Interface that provides the methods to implements that parse rule filter xml
+ * Interface that provides the methods to implement that parse rule filter xml
  * files. That files follow the xsd schema located at:
- * http://proteo.cnb.csic.es/miape-api/schemas/ruleFilter_v1.0.xsd
+ * http://proteo.cnb.csic.es/miape-api/schemas/ruleFilter_v1.2.xsd
  * 
  * @author Salva
  * 
