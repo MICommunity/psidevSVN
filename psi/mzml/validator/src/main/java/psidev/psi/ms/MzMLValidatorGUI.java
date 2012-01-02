@@ -458,17 +458,17 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 		jComboValidationType.setEditable(false);
 		enableRadioButtons(false);
 
-		try {
-			this.ruleFilterManager = new RuleFilterManager(
-					new File(getProperty("filter.rule.file")));
-			// filter rules by the options of the user
-
-		} catch (JAXBException e1) {
-			// no filter rules
-		} catch (IllegalArgumentException e2) {
-			// no filter rules
+		if (isMIAPEValidationSelected()) {
+			try {
+				this.ruleFilterManager = new RuleFilterManager(new File(
+						getProperty("filter.rule.file")));
+				// filter rules by the options of the user
+			} catch (JAXBException e1) {
+				// no filter rules
+			} catch (IllegalArgumentException e2) {
+				// no filter rules
+			}
 		}
-
 		// Call the SwingWorker that will start the validation.
 		sw = new SwingWorker() {
 			public Object construct() {
@@ -477,7 +477,7 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 				jTextAreaMessages.setCaretPosition(0);
 				jProgressBar.setIndeterminate(true);
 				jProgressBar.setString("Initializing validator...");
-				MzMLValidatorGUI.this.runStartTime = System.currentTimeMillis();
+				runStartTime = System.currentTimeMillis();
 				try {
 					// Lazy cached validator.
 					if (validator == null) {
@@ -486,17 +486,16 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 						InputStream ontology = new FileInputStream(getProperty("ontologies.file"));
 
 						validator = new MzMLValidator(ontology, getMappingRuleFile(),
-								getObjectRuleFile(), MzMLValidatorGUI.this.ruleFilterManager,
-								MzMLValidatorGUI.this);
+								getObjectRuleFile(), MzMLValidatorGUI.this);
 						ontology.close();
 					} else {
 
 						// reset all validator fields except the ontologies
-						validator.reset(MzMLValidatorGUI.this.getMappingRuleFile(),
-								MzMLValidatorGUI.this.getObjectRuleFile());
+						validator.reset(getMappingRuleFile(), getObjectRuleFile());
 					}
 					// this will add to the validator the rules to be skipped
-					filterRulesByUserOptions(validator);
+					if (isMIAPEValidationSelected() && ruleFilterManager != null)
+						ruleFilterManager.filterRulesByUserOptions(getSelectedOptions());
 
 					// common settings to set each time the validation button is
 					// pressed
@@ -505,6 +504,9 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 					validator.setSchemaUri(getSchemaUri());
 					validator.setSkipValidation(skipValidation());
 
+					// set the rule filter manager
+					validator.setRuleFilterManager(ruleFilterManager);
+
 					jProgressBar.setString("Indexing mzML file...");
 					final Collection<ValidatorMessage> validationResult = validator
 							.startValidation(inputFile);
@@ -512,13 +514,13 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 
 				} catch (Exception e) {
 					e.printStackTrace();
-					MzMLValidatorGUI.this.notifyOfError(e);
+					notifyOfError(e);
 				}
 				return messages;
 			}
 
 			public void finished() {
-				MzMLValidatorGUI.this.validationDone();
+				validationDone();
 			}
 		};
 		sw.start();
@@ -548,12 +550,12 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 		return objectRuleFile;
 	}
 
-	private boolean isSemanticValidationSelected() {
+	boolean isSemanticValidationSelected() {
 		return this.jComboValidationType.getSelectedItem().equals(
 				ValidationType.SEMANTIC_VALIDATION.getName());
 	}
 
-	private boolean isMIAPEValidationSelected() {
+	boolean isMIAPEValidationSelected() {
 		return this.jComboValidationType.getSelectedItem().equals(
 				ValidationType.MIAPE_VALIDATION.getName());
 	}
@@ -576,30 +578,6 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 		}
 
 		return prop.getProperty(propertyName);
-	}
-
-	/**
-	 * Depending of the user selections (given by the method
-	 * 'getSelectedOptions') some object and cvMapping rules will be tagged to
-	 * be skipped in the validator
-	 * 
-	 * @param validator
-	 */
-	private void filterRulesByUserOptions(MzMLValidator mzMLValidator) {
-
-		// get selected options for excluding cv mapping rules
-		HashMap<String, String> selectedOptions = getSelectedOptions();
-		// get cv mapping identifiers to exclude
-		// this.cvMappingRulesToExclude =
-		// ruleFilterManager.getCVMappingRulesToSkipByUserOptions(selectedOptions);
-		mzMLValidator.addCvMappingRulesToSkip(ruleFilterManager
-				.getCVMappingRulesToSkipByUserOptions(selectedOptions));
-
-		// get object rules identifiers to exclude
-		// this.objectRulesToSkip =
-		// ruleFilterManager.getObjectRulesToSkipByUserOptions(selectedOptions);
-		mzMLValidator.addObjectRulesToSkip(ruleFilterManager
-				.getObjectRulesToSkipByUserOptions(selectedOptions));
 	}
 
 	private void validationDone() {
