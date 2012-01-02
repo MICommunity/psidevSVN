@@ -24,7 +24,7 @@ import javax.xml.bind.annotation.XmlType;
  * &lt;complexType>
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="mzMLElement" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -34,34 +34,34 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "")
-@XmlRootElement(name = "objectRuleToSkip")
-public class ObjectRuleToSkip {
+@XmlRootElement(name = "mandatoryMzMLElement")
+public class MandatoryMzMLElement {
 
-    @XmlAttribute(name = "id", required = true)
-    protected String id;
+    @XmlAttribute(name = "mzMLElement", required = true)
+    protected String mzMLElement;
 
     /**
-     * Gets the value of the id property.
+     * Gets the value of the mzMLElement property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getId() {
-        return id;
+    public String getMzMLElement() {
+        return mzMLElement;
     }
 
     /**
-     * Sets the value of the id property.
+     * Sets the value of the mzMLElement property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setId(String value) {
-        this.id = value;
+    public void setMzMLElement(String value) {
+        this.mzMLElement = value;
     }
 
 }

@@ -49,11 +49,11 @@
 		</referencedRules>
 	</references>
 	<mandatoryElements>
-		<mzMLElement mzMLElement="FileDescription"/>
-		<mzMLElement mzMLElement="Software"/>
-		<mzMLElement mzMLElement="InstrumentConfiguration"/>
-		<mzMLElement mzMLElement="DataProcessingList"/>
-		<mzMLElement mzMLElement="SourceFileList"/>
-		<mzMLElement mzMLElement="SourceComponent"/>
+		<mandatoryMzMLElement mzMLElement="FileDescription"/>
+		<mandatoryMzMLElement mzMLElement="Software"/>
+		<mandatoryMzMLElement mzMLElement="InstrumentConfiguration"/>
+		<mandatoryMzMLElement mzMLElement="DataProcessingList"/>
+		<mandatoryMzMLElement mzMLElement="SourceFileList"/>
+		<mandatoryMzMLElement mzMLElement="SourceComponent"/>
 	</mandatoryElements>
 </ruleFilter>
