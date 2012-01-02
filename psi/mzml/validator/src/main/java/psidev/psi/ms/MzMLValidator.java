@@ -28,11 +28,11 @@ import psidev.psi.tools.cvrReader.CvRuleReaderException;
 import psidev.psi.tools.ontology_manager.impl.local.OntologyLoaderException;
 import psidev.psi.tools.validator.MessageLevel;
 import psidev.psi.tools.validator.Validator;
+import psidev.psi.tools.validator.ValidatorCvContext;
 import psidev.psi.tools.validator.ValidatorException;
 import psidev.psi.tools.validator.ValidatorMessage;
 import psidev.psi.tools.validator.rules.codedrule.ObjectRule;
 import psidev.psi.tools.validator.rules.cvmapping.CvRule;
-import psidev.psi.tools.validator.util.ValidatorReport;
 import uk.ac.ebi.jmzml.MzMLElement;
 import uk.ac.ebi.jmzml.model.mzml.Chromatogram;
 import uk.ac.ebi.jmzml.model.mzml.DataProcessingList;
@@ -53,7 +53,8 @@ import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshaller;
 /**
  * This class represents the PSI mzML semantic validator.
  * 
- * @author Lennart Martens, modified by Juan Antonio Vizcaino
+ * @author Lennart Martens, modified by Juan Antonio Vizcaino and Salvador
+ *         Martínez
  * @version $Id$
  */
 public class MzMLValidator extends Validator {
@@ -68,17 +69,37 @@ public class MzMLValidator extends Validator {
 	private MessageLevel msgL = MessageLevel.WARN;
 	private MzMLUnmarshaller unmarshaller = null;
 	private HashMap<String, List<ValidatorMessage>> msgs;
-	private final RuleFilterManager ruleFilterManager;
+	private RuleFilterManager ruleFilterManager;
 	private URI schemaUri = null;
 	private boolean skipValidation = false;
-	private List<String> objectRulesToSkip = new ArrayList<String>();
-	private List<String> cvMappingRulesToSkip = new ArrayList<String>();
 	private ExtendedValidatorReport extendedReport;
 
+	/**
+	 * Constructor to initialise the validator with the custom ontology and
+	 * cv-mapping without object rule settings. Note: this constructor will try
+	 * to load a local mzIdentML XML schema for syntactic schema validation.
+	 * 
+	 * @param aOntologyConfig
+	 *            the ontology configuration file.
+	 * @param aCvMappingFile
+	 *            the cv-mapping rule configuration file.
+	 * @param aCodedRuleFile
+	 *            the object rule configuration file
+	 * @param validatorGUI
+	 *            the GUI
+	 * @throws ValidatorException
+	 *             in case the validator encounters unexpected errors.
+	 * @throws OntologyLoaderException
+	 *             in case of problems while loading the needed ontologies.
+	 * @throws FileNotFoundException
+	 *             in case of any configuration file doesn't exist.
+	 * @throws CvRuleReaderException
+	 *             in case of problems while reading cv mapping rules.
+	 * 
+	 */
 	public MzMLValidator(InputStream aOntologyConfig, String aCvMappingFile, String aCodedRuleFile,
-			RuleFilterManager ruleFilterManager, MzMLValidatorGUI validatorGUI)
-			throws ValidatorException, OntologyLoaderException, FileNotFoundException,
-			CvRuleReaderException {
+			MzMLValidatorGUI validatorGUI) throws ValidatorException, OntologyLoaderException,
+			FileNotFoundException, CvRuleReaderException {
 		super(aOntologyConfig);
 
 		final FileInputStream cvMappingFile = new FileInputStream(aCvMappingFile);
@@ -96,8 +117,6 @@ public class MzMLValidator extends Validator {
 		// set the gui
 		this.setValidatorGUI(validatorGUI);
 
-		// set the ruleFilterManager
-		this.ruleFilterManager = ruleFilterManager;
 		this.msgs = new HashMap<String, List<ValidatorMessage>>();
 		try {
 			// ToDo: find better default value: e.g. official address or local
@@ -186,25 +205,21 @@ public class MzMLValidator extends Validator {
 	public Collection<ValidatorMessage> validate(Object objectToCheck) throws ValidatorException {
 		Collection<ValidatorMessage> messages = new ArrayList<ValidatorMessage>();
 		for (ObjectRule rule : this.getObjectRules()) {
-			// before to check the rule, look if the rule is in the
-			// objectRulesToSkip list
-			if (!this.objectRulesToSkip.contains(rule.getId())) {
-				if (rule.canCheck(objectToCheck)) {
+			if (rule.canCheck(objectToCheck)) {
 
-					final Collection<ValidatorMessage> resultCheck = rule.check(objectToCheck);
-					// update the object rule report
-					extendedReport.objectRuleExecuted(rule, resultCheck);
+				final Collection<ValidatorMessage> resultCheck = rule.check(objectToCheck);
+				// update the object rule report
+				extendedReport.objectRuleExecuted(rule, resultCheck);
 
-					if (ruleFilterManager != null) {
-						// state if the rule is valid in the file or not
-						boolean valid = true;
-						if (resultCheck != null && !resultCheck.isEmpty()) {
-							valid = false;
-						}
-						updateRulesToSkipByObjectRuleResult(rule, valid);
+				if (ruleFilterManager != null) {
+					// state if the rule is valid in the file or not
+					boolean valid = true;
+					if (resultCheck != null && !resultCheck.isEmpty()) {
+						valid = false;
 					}
-					messages.addAll(resultCheck);
+					ruleFilterManager.updateRulesToSkipByObjectRuleResult(rule, valid);
 				}
+				messages.addAll(resultCheck);
 			}
 		}
 		return messages;
@@ -215,8 +230,9 @@ public class MzMLValidator extends Validator {
 	 * 
 	 * @param args
 	 *            Start-up arguments; five here: the ontology configuration
-	 *            file, the CV mapping file, the coded rules file, the mzML file
-	 *            to validate, and the level of the error messages.
+	 *            file, the CV mapping file, the coded rules file, the rule
+	 *            filter file, the mzML file to validate, and the level of the
+	 *            error messages.
 	 */
 	public static void main(String[] args) {
 		if (args == null || args.length != 6) {
@@ -287,12 +303,14 @@ public class MzMLValidator extends Validator {
 
 		try {
 			InputStream ontInput = new FileInputStream(ontology);
-			// InputStream cvInput = new FileInputStream(cvMapping);
-			// InputStream objInput = new FileInputStream(objectRules);
-			RuleFilterManager ruleFilterManager = new RuleFilterManager(ruleFilterXMLFile);
+			// rule filter manager
+			RuleFilterManager ruleFilterManager = null;
+			if (ruleFilterXMLFile != null)
+				ruleFilterManager = new RuleFilterManager(ruleFilterXMLFile);
 			validator = new MzMLValidator(ontInput, cvMapping.getAbsolutePath(),
-					objectRules.getAbsolutePath(), ruleFilterManager, null);
+					objectRules.getAbsolutePath(), null);
 			validator.setMessageReportLevel(msgLevel);
+			validator.setRuleFilterManager(ruleFilterManager);
 
 			// Add the messages to the ArrayList messages and use the
 			// startValidation() method (below).
@@ -303,52 +321,73 @@ public class MzMLValidator extends Validator {
 		}
 
 		// ---------------- Print messages ---------------- //
+		System.out.println(validator.printMessages(messages));
+		System.out.println("\n");
+		System.out.println(validator.printValidatorReport());
+		System.out.println("\n");
+		System.out.println(validator.printCvContextReport());
+		System.out.println("\n\nAll done. Goodbye.");
+	}
 
-		printMessages(messages);
+	/**
+	 * Sets the ruleFilterManager
+	 * 
+	 * @param ruleFilterManager
+	 */
+	public void setRuleFilterManager(RuleFilterManager ruleFilterManager) {
+		this.ruleFilterManager = ruleFilterManager;
+	}
 
-		if (validator != null) {
-			ValidatorReport vr = validator.getReport();
+	public String printValidatorReport() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("\n\n\n---------- ---------- Rule statistics ---------- ----------\n\n");
 
-			System.out
-					.println("----- Rule application report ---------------------------------------------------");
-			System.out.print("CvRules total             : "
-					+ validator.getCvRuleManager().getCvRules().size() + "\t( ");
-			for (CvRule rule : validator.getCvRuleManager().getCvRules()) {
-				System.out.print(rule.getId() + " ");
+		if (getCvRuleManager() != null && getReport() != null) {
+			sb.append("\tCvMappingRule total count: ")
+					.append(getCvRuleManager().getCvRules().size()).append("\n");
+			sb.append("\tCvMappingRules not run: ")
+					.append(getReport().getCvRulesNotChecked().size()).append("\n");
+			for (CvRule rule : getReport().getCvRulesNotChecked()) {
+				sb.append("\t\trule: ").append(rule.getId()).append("\n");
 			}
-			System.out.print(")");
-
-			System.out.print("\nCvRules with invalid XPath: " + vr.getCvRulesInvalidXpath().size()
-					+ "\t( ");
-			for (CvRule rule : vr.getCvRulesInvalidXpath()) {
-				System.out.print(rule.getId() + " ");
+			sb.append("\tCvMappingRules with invalid Xpath: ")
+					.append(getReport().getCvRulesInvalidXpath().size()).append("\n");
+			for (CvRule rule : getReport().getCvRulesInvalidXpath()) {
+				sb.append("\t\trule: ").append(rule.getId()).append("\n");
 			}
-			System.out.print(")");
-
-			System.out.print("\nCvRules not checked       : " + vr.getCvRulesNotChecked().size()
-					+ "\t( ");
-			for (CvRule rule : vr.getCvRulesNotChecked()) {
-				System.out.print(rule.getId() + " ");
+			sb.append("\tCvMappingRules valid Xpath, but no hit: ")
+					.append(getReport().getCvRulesValidXpath().size()).append("\n");
+			for (CvRule rule : getReport().getCvRulesValidXpath()) {
+				sb.append("\t\trule: ").append(rule.getId()).append("\n");
 			}
-			System.out.print(")");
-
-			System.out.print("\nCvRules valid             : " + vr.getCvRulesValid().size()
-					+ "\t( ");
-			for (CvRule rule : vr.getCvRulesValid()) {
-				System.out.print(rule.getId() + " ");
+			sb.append("\tCvMappingRules run & valid: ")
+					.append(getReport().getCvRulesValid().size()).append("\n");
+			for (CvRule rule : getReport().getCvRulesValid()) {
+				sb.append("\t\trule: ").append(rule.getId()).append("\n");
 			}
-			System.out.print(")");
+			sb.append("---------- ---------- ---------- ---------- ----------\n");
 
-			System.out.print("\nCvRules with valid XPath  : " + vr.getCvRulesValidXpath().size()
-					+ "\t( ");
-			for (CvRule rule : vr.getCvRulesValidXpath()) {
-				System.out.print(rule.getId() + " ");
+		}
+		return sb.toString();
+	}
+
+	public String printCvContextReport() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("\n\n\n---------- ---------- CvContext statistics ---------- ----------\n\n");
+
+		if (ValidatorCvContext.getInstance() != null) {
+			// check for terms that were not anticipated with the rules in the
+			// CV mapping file.
+			for (String xpath : ValidatorCvContext.getInstance().getNotRecognisedXpath()) {
+				sb.append("\t").append(xpath).append("\n");
+				sb.append("\tunrecognized terms:\n");
+				for (String term : ValidatorCvContext.getInstance().getNotRecognisedTerms(xpath)) {
+					sb.append(term).append("; ");
+				}
 			}
-			System.out.println(")");
-			System.out
-					.println("---------------------------------------------------------------------------------");
 		}
 
+		return sb.toString();
 	}
 
 	/**
@@ -451,6 +490,11 @@ public class MzMLValidator extends Validator {
 			// referenceableParamGroups and refs).
 			// Failure = auto-exit.
 			// @TODO Check internal references with object rules!
+			// ****************************
+			// CHECK MANDATORY ELEMENTS if MIAPE validation
+			// ****************************
+			if (this.gui.isMIAPEValidationSelected())
+				checkMandatoryElements();
 
 			// ****************************
 			// OBJECT RULES
@@ -473,7 +517,44 @@ public class MzMLValidator extends Validator {
 				return new ArrayList<ValidatorMessage>();
 			}
 		}
-		return this.filterValidatorMessages();
+		// return filter messages
+		if (ruleFilterManager != null)
+			return ruleFilterManager.filterValidatorMessages(this.msgs, this.extendedReport);
+		else
+			// or return all messages for semantic validation
+			return this.getMessageCollection();
+
+	}
+
+	/**
+	 * Check for the presence of all mandatory elements required at this
+	 * validation type
+	 */
+	private void checkMandatoryElements() {
+		List<ValidatorMessage> ret = new ArrayList<ValidatorMessage>();
+		if (ruleFilterManager != null) {
+			final List<String> mandatoryElements = ruleFilterManager.getMandatoryElements();
+			for (String elementName : mandatoryElements) {
+				MzMLElement mzMLElement = getMzMLElement(elementName);
+				// check if that element is present on the file
+				final MzMLObject mzIdentMLObject = unmarshaller.unmarshalFromXpath(
+						mzMLElement.getXpath(), mzMLElement.getClazz());
+				if (mzIdentMLObject == null) {
+					addValidatorMessage("element missing", new ValidatorMessage(
+							"The element on xPath:'" + mzMLElement.getXpath()
+									+ "' is required present for the current type of validation.",
+							MessageLevel.ERROR), this.msgL);
+				}
+			}
+		}
+	}
+
+	private MzMLElement getMzMLElement(String elementName) {
+		for (MzMLElement element : MzMLElement.values()) {
+			if (element.name().equals(elementName))
+				return element;
+		}
+		return null;
 	}
 
 	/**
@@ -506,36 +587,34 @@ public class MzMLValidator extends Validator {
 		// ToDo: check: if there is only one such element in the XML, we can
 		// use the unmarshalFromXpath() method!
 		// This is the new way to do it (not considering the unmarshaller)
-		checkElementCvMapping(MzMLElement.FileDescription.getXpath(), FileDescription.class,
-				MessageLevel.ERROR);
+		checkElementCvMapping(MzMLElement.FileDescription.getXpath(), FileDescription.class);
 
 		// --------------------
 		// Validate the sample list.
 		// -------------------- //
-		checkElementCvMapping(MzMLElement.SampleList.getXpath(), SampleList.class, null);
+		checkElementCvMapping(MzMLElement.SampleList.getXpath(), SampleList.class);
 
 		// --------------------
 		// Validate the software list.
 		// -------------------- //
-		checkElementCvMapping(MzMLElement.Software.getXpath(), Software.class, MessageLevel.ERROR);
+		checkElementCvMapping(MzMLElement.Software.getXpath(), Software.class);
 
 		// --------------------
 		// Validate the instrument configuration list
 		// (substituting the former instrument list)
 		// -------------------- //
 		checkElementCvMapping(MzMLElement.InstrumentConfigurationList.getXpath(),
-				InstrumentConfigurationList.class, MessageLevel.ERROR);
+				InstrumentConfigurationList.class);
 
 		// --------------------
 		// Validate the data processing list.
 		// -------------------- //
-		checkElementCvMapping(MzMLElement.DataProcessingList.getXpath(), DataProcessingList.class,
-				MessageLevel.ERROR);
+		checkElementCvMapping(MzMLElement.DataProcessingList.getXpath(), DataProcessingList.class);
 
 		// --------------------
 		// Validate the chromatogram binary data array.
 		// -------------------- //
-		checkElementCvMapping(MzMLElement.Chromatogram.getXpath(), Chromatogram.class, null);
+		checkElementCvMapping(MzMLElement.Chromatogram.getXpath(), Chromatogram.class);
 
 		// --------------------
 		// Validate each spectrum (in parallel depending of CPU cores)
@@ -582,40 +661,29 @@ public class MzMLValidator extends Validator {
 
 		// instrumentConfiguration
 		checkElementObjectRule(MzMLElement.InstrumentConfiguration.getXpath(),
-				InstrumentConfiguration.class, MessageLevel.ERROR);
+				InstrumentConfiguration.class);
 
 		// source file list
-		checkElementObjectRule(MzMLElement.SourceFileList.getXpath(), SourceFileList.class,
-				MessageLevel.ERROR);
+		checkElementObjectRule(MzMLElement.SourceFileList.getXpath(), SourceFileList.class);
 
 		// source
-		checkElementObjectRule(MzMLElement.SourceComponent.getXpath(), SourceComponent.class,
-				MessageLevel.ERROR);
+		checkElementObjectRule(MzMLElement.SourceComponent.getXpath(), SourceComponent.class);
 
 		// softwareList
-		checkElementObjectRule(MzMLElement.SoftwareList.getXpath(), SoftwareList.class,
-				MessageLevel.ERROR);
+		checkElementObjectRule(MzMLElement.SoftwareList.getXpath(), SoftwareList.class);
 
 		// scan settings
-		checkElementObjectRule(MzMLElement.ScanSettings.getXpath(), ScanSettings.class,
-				MessageLevel.INFO);
+		checkElementObjectRule(MzMLElement.ScanSettings.getXpath(), ScanSettings.class);
 
 	}
 
-	private void checkElementCvMapping(String xpath, Class clazz, MessageLevel levelOnAbsence)
-			throws ValidatorException {
+	private void checkElementCvMapping(String xpath, Class clazz) throws ValidatorException {
 		MzMLObjectIterator mzMLIter;
 		if (this.gui != null) {
 			this.gui.setProgress(++progress, "Validating " + xpath + "...");
 		}
 		mzMLIter = this.unmarshaller.unmarshalCollectionFromXpath(xpath, clazz);
-		if (levelOnAbsence != null) {
-			if (!mzMLIter.hasNext()) {
-				addValidatorMessage("element missing", new ValidatorMessage(
-						"the element on xPath:'" + xpath + "' is not present", levelOnAbsence),
-						this.msgL);
-			}
-		}
+
 		Collection toValidate = new ArrayList();
 		while (mzMLIter.hasNext()) {
 			final Object next = mzMLIter.next();
@@ -627,20 +695,13 @@ public class MzMLValidator extends Validator {
 		addMessages(cvMappingResult, this.msgL);
 	}
 
-	private void checkElementObjectRule(String xpath, Class clazz, MessageLevel levelOnAbsence)
-			throws ValidatorException {
+	private void checkElementObjectRule(String xpath, Class clazz) throws ValidatorException {
 		MzMLObjectIterator<MzMLObject> mzMLIter;
 		if (this.gui != null) {
 			this.gui.setProgress(++progress, "Validating " + xpath + "...");
 		}
 		mzMLIter = this.unmarshaller.unmarshalCollectionFromXpath(xpath, clazz);
-		if (levelOnAbsence != null) {
-			if (!mzMLIter.hasNext()) {
-				addValidatorMessage("element missing", new ValidatorMessage(
-						"the element on xPath:'" + xpath + "' is not present", levelOnAbsence),
-						this.msgL);
-			}
-		}
+
 		Collection<ValidatorMessage> objectRuleResult = new ArrayList<ValidatorMessage>();
 		Collection toValidate = new ArrayList();
 		while (mzMLIter.hasNext()) {
@@ -660,21 +721,18 @@ public class MzMLValidator extends Validator {
 
 		if (this.getCvRuleManager() != null) {
 			for (CvRule rule : this.getCvRuleManager().getCvRules()) {
-				// check if the rule is in the list of cvMappingRules to skip
-				if (!this.cvMappingRulesToSkip.contains(rule.getId())) {
-					for (Object o : collection) {
-						if (rule.canCheck(xPath)) {
-							final Collection<ValidatorMessage> resultCheck = rule.check(o, xPath);
-							if (this.ruleFilterManager != null) {
-								// state if the rule is valid in the file or not
-								boolean valid = true;
-								if (resultCheck != null && !resultCheck.isEmpty()) {
-									valid = false;
-								}
-								updateRulesToSkipByCvMappingRuleResult(rule, valid);
+				for (Object o : collection) {
+					if (rule.canCheck(xPath)) {
+						final Collection<ValidatorMessage> resultCheck = rule.check(o, xPath);
+						if (this.ruleFilterManager != null) {
+							// state if the rule is valid in the file or not
+							boolean valid = true;
+							if (resultCheck != null && !resultCheck.isEmpty()) {
+								valid = false;
 							}
-							messages.addAll(resultCheck);
+							ruleFilterManager.updateRulesToSkipByCvMappingRuleResult(rule, valid);
 						}
+						messages.addAll(resultCheck);
 					}
 				}
 			}
@@ -682,56 +740,6 @@ public class MzMLValidator extends Validator {
 			log.error("The CvRuleManager has not been set up yet.");
 		}
 		return messages;
-	}
-
-	public void addCvMappingRuleToSkip(CvRule cvMappingRule) {
-		this.cvMappingRulesToSkip.add(cvMappingRule.getId());
-	}
-
-	public void addCvMappingRulesToSkip(Collection<String> cvMappingRulesIdentifiers) {
-		for (String cvRuleIdentifier : cvMappingRulesIdentifiers) {
-			this.cvMappingRulesToSkip.add(cvRuleIdentifier);
-		}
-	}
-
-	public void addObjectRuleToSkip(ObjectRule objectRule) {
-		this.objectRulesToSkip.add(objectRule.getId());
-	}
-
-	public void addObjectRulesToSkip(Collection<String> objectRulesIdentifiers) {
-		for (String objectRuleIdentifier : objectRulesIdentifiers) {
-			this.objectRulesToSkip.add(objectRuleIdentifier);
-		}
-	}
-
-	private void updateRulesToSkipByCvMappingRuleResult(CvRule rule, boolean valid) {
-		// get cvMappingRules that should be skipped
-		final List<String> cvMappingRulesToSkipByCvMappingRule = this.ruleFilterManager
-				.getCvMappingRulesToSkipByCvMappingRule(rule.getId(), valid);
-		if (cvMappingRulesToSkipByCvMappingRule != null
-				&& !cvMappingRulesToSkipByCvMappingRule.isEmpty())
-			this.cvMappingRulesToSkip.addAll(cvMappingRulesToSkipByCvMappingRule);
-		// get objectRules that should be skipped
-		final List<String> objectRulesToSkipByCvMappingRule = this.ruleFilterManager
-				.getObjectRulesToSkipByCvMappingRule(rule.getId(), valid);
-		if (objectRulesToSkipByCvMappingRule != null && !objectRulesToSkipByCvMappingRule.isEmpty())
-			this.objectRulesToSkip.addAll(objectRulesToSkipByCvMappingRule);
-	}
-
-	private void updateRulesToSkipByObjectRuleResult(ObjectRule rule, boolean valid) {
-		// get objectRules that should be skipped
-		List<String> objectRulesToSkip = ruleFilterManager.getObjectRulesToSkipByObjectRule(
-				rule.getId(), valid);
-		if (objectRulesToSkip != null && !objectRulesToSkip.isEmpty()) {
-			this.objectRulesToSkip.addAll(objectRulesToSkip);
-		}
-		// get cvMappingRules that should be skipped
-		List<String> cvMappingRulesToSkip = ruleFilterManager.getCvMappingRulesToSkipByObjectRule(
-				rule.getId(), valid);
-		if (cvMappingRulesToSkip != null && !cvMappingRulesToSkip.isEmpty()) {
-			this.cvMappingRulesToSkip.addAll(objectRulesToSkip);
-		}
-
 	}
 
 	private void addValidatorMessage(String ruleId, ValidatorMessage validatorMessage,
@@ -889,18 +897,18 @@ public class MzMLValidator extends Validator {
 		System.exit(1);
 	}
 
-	private static void printMessages(Collection aMessages) {
+	private String printMessages(Collection aMessages) {
+		StringBuilder sb = new StringBuilder();
 		if (aMessages.size() != 0) {
-			System.out
-					.println("\n\nThe following messages were obtained during the validation of your XML file:\n");
+			sb.append("\n\nThe following messages were obtained during the validation of your XML file:\n");
 			for (Object aMessage : aMessages) {
 				ValidatorMessage lMessage = (ValidatorMessage) aMessage;
-				System.out.println(" * " + lMessage + "\n");
+				sb.append(" * " + lMessage + "\n");
 			}
 		} else {
-			System.out
-					.println("\n\nCongratulations! Your XML file passed the semantic validation!\n\n");
+			sb.append("\n\nCongratulations! Your XML file passed the semantic validation!\n\n");
 		}
+		return sb.toString();
 	}
 
 	private void addMessages(Collection<ValidatorMessage> aNewMessages, MessageLevel aLevel) {
@@ -923,43 +931,6 @@ public class MzMLValidator extends Validator {
 
 		}
 
-	}
-
-	/**
-	 * Remove the validation messages from object rules that has been added to
-	 * the list of object rules to skip at runtime
-	 * 
-	 * @return the collection of validation messages after the filter
-	 */
-	private Collection<ValidatorMessage> filterValidatorMessages() {
-		ArrayList<ValidatorMessage> finalMessages = new ArrayList<ValidatorMessage>();
-
-		if (this.msgs != null && !this.msgs.isEmpty()) {
-
-			for (String ruleIdentifier : this.msgs.keySet()) {
-				boolean report = true;
-				// if the rule that generated the messages is in the list of
-				// rules to skip, not add to the final message list
-				if (this.objectRulesToSkip != null
-						&& this.objectRulesToSkip.contains(ruleIdentifier))
-					report = false;
-
-				// if the rule that generated the messages is in the list of
-				// rules to skip, not add to the final message list
-				if (this.cvMappingRulesToSkip != null
-						&& this.cvMappingRulesToSkip.contains(ruleIdentifier))
-					report = false;
-
-				if (report) {
-					finalMessages.addAll(this.msgs.get(ruleIdentifier));
-				} else {
-					// move the rule to the list of non checked rules
-					extendedReport.setRuleAsSkipped(ruleIdentifier);
-				}
-			}
-
-		}
-		return finalMessages;
 	}
 
 	private static MessageLevel getMessageLevel(String aLevel) {
@@ -1002,8 +973,8 @@ public class MzMLValidator extends Validator {
 		this.progress = 0;
 
 		// restart the rules to skip
-		this.objectRulesToSkip = new ArrayList<String>();
-		this.cvMappingRulesToSkip = new ArrayList<String>();
+		if (ruleFilterManager != null)
+			ruleFilterManager.restartRulesToSkip();
 
 		// delete all objectRules
 		this.getObjectRules().clear();
