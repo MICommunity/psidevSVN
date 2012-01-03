@@ -51,7 +51,6 @@
 	<mandatoryElements>
 		<mandatoryMzMLElement mzMLElement="FileDescription"/>
 		<mandatoryMzMLElement mzMLElement="Software"/>
-		<mandatoryMzMLElement mzMLElement="InstrumentConfiguration"/>
 		<mandatoryMzMLElement mzMLElement="DataProcessingList"/>
 		<mandatoryMzMLElement mzMLElement="SourceFileList"/>
 		<mandatoryMzMLElement mzMLElement="SourceComponent"/>
