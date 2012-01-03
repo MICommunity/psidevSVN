@@ -16,12 +16,11 @@ import psidev.psi.tools.validator.ValidatorMessage;
 import psidev.psi.tools.validator.rules.codedrule.ObjectRule;
 import uk.ac.ebi.jmzml.MzMLElement;
 import uk.ac.ebi.jmzml.model.mzml.CVParam;
-import uk.ac.ebi.jmzml.model.mzml.ComponentList;
 import uk.ac.ebi.jmzml.model.mzml.InstrumentConfiguration;
 
 /**
  * Checks if the manufacturer and model are in the cv terms of the instrument
- * configuration. Also checks if the component list is empty or not.
+ * configuration.
  * 
  * @author Salva
  * 
@@ -34,8 +33,6 @@ public class InstrumentConfigurationObjectRule extends ObjectRule<InstrumentConf
 	private int error = -1;
 	private Context instrumentConfigurationCvParamContext = new Context(
 			MzMLElement.InstrumentConfiguration.getXpath() + "/cvParam");
-	private String componentListContext = MzMLElement.ComponentList.getXpath();
-	private final int COMNPONENTLIST_ERROR = 3;
 	private final int MANUFACTURER_ERROR = 2;
 	private final int MODEL_ERROR = 1;
 
@@ -70,21 +67,7 @@ public class InstrumentConfigurationObjectRule extends ObjectRule<InstrumentConf
 		// Check instrument model
 		messages.addAll(checkInstrumentModel(instrumentConfiguration));
 
-		// Check component list
-		messages.addAll(checkComponentList(instrumentConfiguration.getComponentList()));
-
 		// return messages
-		return messages;
-	}
-
-	private Collection<? extends ValidatorMessage> checkComponentList(ComponentList componentList) {
-		Collection<ValidatorMessage> messages = new ArrayList<ValidatorMessage>();
-
-		if (componentList == null) {
-			messages.add(new ValidatorMessage("Component list is empty", MessageLevel.ERROR,
-					new Context(componentListContext), this));
-			error = COMNPONENTLIST_ERROR;
-		}
 		return messages;
 	}
 
@@ -124,8 +107,6 @@ public class InstrumentConfigurationObjectRule extends ObjectRule<InstrumentConf
 		} else if (error == MANUFACTURER_ERROR) {
 			ret.add("Add a direct children of 'instrument model' (MS:1000031) in "
 					+ instrumentConfigurationCvParamContext.getContext());
-		} else if (error == COMNPONENTLIST_ERROR) {
-			ret.add("Add a component list in " + componentListContext);
 		}
 		return ret;
 	}
