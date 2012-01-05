@@ -22,7 +22,7 @@
 		
 		<!-- Instrument manufacturer, model and customizations-->
 		<CvMappingRule id="instrumentconfiguration_must" cvElementPath="/mzML/instrumentConfigurationList/instrumentConfiguration/cvParam/@accession" requirementLevel="MUST" scopePath="/mzML/instrumentConfigurationList/instrumentConfiguration" cvTermsCombinationLogic="AND">
-			<CvTerm termAccession="MS:1000031" useTerm="true" termName="instrument model" isRepeatable="false" allowChildren="true" cvIdentifierRef="MS"/>
+			<CvTerm termAccession="MS:1000031" useTerm="true" termName="instrument model" isRepeatable="true" allowChildren="true" cvIdentifierRef="MS"/>
 			<CvTerm termAccession="MS:1000032" useTerm="true" termName="customization" isRepeatable="false" allowChildren="false" cvIdentifierRef="MS"/> <!-- ADDED -->
 			<CvTerm termAccession="MS:1000597" useTerm="false" termName="ion optics type" isRepeatable="false" allowChildren="true" cvIdentifierRef="MS"/> <!-- ADDED from MAY -->
 		</CvMappingRule>
