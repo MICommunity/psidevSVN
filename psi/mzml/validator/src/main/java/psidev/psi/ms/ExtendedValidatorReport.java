@@ -2,6 +2,7 @@ package psidev.psi.ms;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 
 import psidev.psi.tools.validator.ValidatorMessage;
 import psidev.psi.tools.validator.rules.Rule;
@@ -13,25 +14,25 @@ import psidev.psi.tools.validator.util.ValidatorReport;
 public class ExtendedValidatorReport extends ValidatorReport {
 
 	private static final String NEW_LINE = System.getProperty("line.separator");;
-	Collection<ObjectRule> objectRulesNotChecked = new ArrayList<ObjectRule>();
-	Collection<ObjectRule> objectRulesValid = new ArrayList<ObjectRule>();
-	Collection<ObjectRule> objectRulesInvalid = new ArrayList<ObjectRule>();
+	HashMap<String, ObjectRule> objectRulesNotChecked = new HashMap<String, ObjectRule>();
+	HashMap<String, ObjectRule> objectRulesValid = new HashMap<String, ObjectRule>();
+	HashMap<String, ObjectRule> objectRulesInvalid = new HashMap<String, ObjectRule>();
 
 	public ExtendedValidatorReport(Collection<ObjectRule> objectRules) {
 		super(new ArrayList<CvRule>());
-		this.objectRulesNotChecked.addAll(objectRules);
+		addToMap(objectRules, objectRulesNotChecked);
 	}
 
 	public Collection<ObjectRule> getObjectRulesNotChecked() {
-		return objectRulesNotChecked;
+		return objectRulesNotChecked.values();
 	}
 
 	public Collection<ObjectRule> getObjectRulesValid() {
-		return objectRulesValid;
+		return objectRulesValid.values();
 	}
 
 	public Collection<ObjectRule> getObjectRulesInvalid() {
-		return objectRulesInvalid;
+		return objectRulesInvalid.values();
 	}
 
 	public void setCvRules(Collection<CvRule> cvRules) {
@@ -55,18 +56,24 @@ public class ExtendedValidatorReport extends ValidatorReport {
 			valid = false;
 
 		// remove from the list of rules not applied
-		this.objectRulesNotChecked.remove(rule);
+		this.objectRulesNotChecked.remove(rule.getId());
 
 		// if valid, add to the list of valid rules
 		if (valid) {
-			if (!this.objectRulesValid.contains(rule))
-				this.objectRulesValid.add(rule);
+			if (!this.objectRulesValid.containsKey(rule.getId()))
+				this.objectRulesValid.put(rule.getId(), rule);
 		} else {
-			if (!this.objectRulesInvalid.contains(rule))
-				this.objectRulesInvalid.add(rule);
-			if (this.objectRulesValid.contains(rule))
-				this.objectRulesValid.remove(rule);
+			if (!this.objectRulesInvalid.containsKey(rule.getId()))
+				this.objectRulesInvalid.put(rule.getId(), rule);
+
+			this.objectRulesValid.remove(rule.getId());
 		}
+	}
+
+	public void objectRuleExecuted(ObjectRule rule, ValidatorMessage resultCheck) {
+		Collection<ValidatorMessage> messages = new ArrayList<ValidatorMessage>();
+		messages.add(resultCheck);
+		this.objectRuleExecuted(rule, messages);
 	}
 
 	public void setRuleAsSkipped(String ruleId) {
@@ -74,12 +81,12 @@ public class ExtendedValidatorReport extends ValidatorReport {
 		if (objectRule != null) {
 			// add to NotChecked rules
 			if (getObjectRuleById(ruleId, this.objectRulesNotChecked) == null)
-				this.objectRulesNotChecked.add(objectRule);
+				this.objectRulesNotChecked.put(objectRule.getId(), objectRule);
 			// remove from the other collections
 			if (getObjectRuleById(ruleId, this.objectRulesInvalid) != null)
-				this.objectRulesInvalid.remove(objectRule);
+				this.objectRulesInvalid.remove(objectRule.getId());
 			if (getObjectRuleById(ruleId, this.objectRulesValid) != null)
-				this.objectRulesValid.remove(objectRule);
+				this.objectRulesValid.remove(objectRule.getId());
 		}
 		CvRule cvRule = getCvRuleById(ruleId);
 		if (cvRule != null) {
@@ -88,11 +95,11 @@ public class ExtendedValidatorReport extends ValidatorReport {
 				this.getCvRulesNotChecked().add(cvRule);
 			// remove from the other collections
 			if (getCvRuleById(ruleId, this.getCvRulesInvalidXpath()) != null)
-				this.objectRulesValid.remove(objectRule);
+				this.getCvRulesInvalidXpath().remove(objectRule);
 			if (getCvRuleById(ruleId, this.getCvRulesValid()) != null)
-				this.objectRulesValid.remove(objectRule);
+				this.getCvRulesValid().remove(objectRule);
 			if (getCvRuleById(ruleId, this.getCvRulesValidXpath()) != null)
-				this.objectRulesValid.remove(objectRule);
+				this.getCvRulesValidXpath().remove(objectRule);
 		}
 
 	}
@@ -109,15 +116,11 @@ public class ExtendedValidatorReport extends ValidatorReport {
 	 * Search for a rule in a collection of rules
 	 * 
 	 * @param ruleId
-	 * @param rules
+	 * @param map
 	 * @return
 	 */
-	private ObjectRule getObjectRuleById(String ruleId, Collection<ObjectRule> rules) {
-		for (ObjectRule objectRule : rules) {
-			if (objectRule.getId().equals(ruleId))
-				return objectRule;
-		}
-		return null;
+	private ObjectRule getObjectRuleById(String ruleId, HashMap<String, ObjectRule> map) {
+		return map.get(ruleId);
 	}
 
 	/**
@@ -156,18 +159,14 @@ public class ExtendedValidatorReport extends ValidatorReport {
 	 */
 	private ObjectRule getObjectRuleById(String ruleId) {
 		if (ruleId != null) {
-			for (ObjectRule objectRule : this.objectRulesInvalid) {
-				if (ruleId.equals(objectRule.getId()))
-					return objectRule;
-			}
-			for (ObjectRule objectRule : this.objectRulesNotChecked) {
-				if (ruleId.equals(objectRule.getId()))
-					return objectRule;
-			}
-			for (ObjectRule objectRule : this.objectRulesValid) {
-				if (ruleId.equals(objectRule.getId()))
-					return objectRule;
-			}
+			if (this.objectRulesInvalid.containsKey(ruleId))
+				return this.objectRulesInvalid.get(ruleId);
+
+			if (this.objectRulesNotChecked.containsKey(ruleId))
+				return this.objectRulesNotChecked.get(ruleId);
+
+			if (this.objectRulesValid.containsKey(ruleId))
+				return this.objectRulesValid.get(ruleId);
 		}
 		return null;
 	}
@@ -199,7 +198,7 @@ public class ExtendedValidatorReport extends ValidatorReport {
 		printCvMappingRules(sb, "cvMapping Rules with invalid Xpath", this.getCvRulesInvalidXpath());
 		printCvMappingRules(sb, "cvMapping Rules that haven't been run",
 				this.getCvRulesNotChecked());
-		printObjectRules(sb, "Valid object rules", this.objectRulesValid);
+		printObjectRules(sb, "Valid object rules", this.getObjectRulesValid());
 		printObjectRules(sb, "Invalid object rules", this.getObjectRulesInvalid());
 		printObjectRules(sb, "Object rules that haven't been run", this.getObjectRulesNotChecked());
 		return sb.toString();
@@ -210,12 +209,12 @@ public class ExtendedValidatorReport extends ValidatorReport {
 		if (objectRule != null) {
 			// add to invalid rules
 			if (getObjectRuleById(ruleId, this.objectRulesInvalid) == null)
-				this.objectRulesNotChecked.add(objectRule);
+				this.objectRulesInvalid.put(objectRule.getId(), objectRule);
 			// remove from the other collections
 			if (getObjectRuleById(ruleId, this.objectRulesNotChecked) != null)
-				this.objectRulesInvalid.remove(objectRule);
+				this.objectRulesNotChecked.remove(objectRule.getId());
 			if (getObjectRuleById(ruleId, this.objectRulesValid) != null)
-				this.objectRulesValid.remove(objectRule);
+				this.objectRulesValid.remove(objectRule.getId());
 		}
 		CvRule cvRule = getCvRuleById(ruleId);
 		if (cvRule != null) {
@@ -224,12 +223,24 @@ public class ExtendedValidatorReport extends ValidatorReport {
 				this.getCvRulesNotChecked().add(cvRule);
 			// remove from the other collections
 			if (getCvRuleById(ruleId, this.getCvRulesNotChecked()) != null)
-				this.objectRulesValid.remove(objectRule);
+				this.getCvRulesNotChecked().remove(objectRule);
 			if (getCvRuleById(ruleId, this.getCvRulesValid()) != null)
-				this.objectRulesValid.remove(objectRule);
+				this.getCvRulesValid().remove(objectRule);
 			if (getCvRuleById(ruleId, this.getCvRulesValidXpath()) != null)
-				this.objectRulesValid.remove(objectRule);
+				this.getCvRulesValidXpath().remove(objectRule);
 		}
 
+	}
+
+	// UTIL
+	private void addToMap(ObjectRule objectRule, HashMap<String, ObjectRule> map) {
+		if (!map.containsKey(objectRule.getId()))
+			map.put(objectRule.getId(), objectRule);
+	}
+
+	private void addToMap(Collection<ObjectRule> objectRules, HashMap<String, ObjectRule> map) {
+		for (ObjectRule objectRule : objectRules) {
+			this.addToMap(objectRule, map);
+		}
 	}
 }

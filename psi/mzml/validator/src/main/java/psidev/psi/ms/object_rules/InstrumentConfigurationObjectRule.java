@@ -76,7 +76,7 @@ public class InstrumentConfigurationObjectRule extends ObjectRule<InstrumentConf
 		Collection<ValidatorMessage> messages = new ArrayList<ValidatorMessage>();
 		final List<CVParam> cvParams = instrumentConfiguration.getCvParam();
 		if (ObjectRuleUtil.checkAccessionsInCVParams(cvParams, instrumentModelAccessions).isEmpty()) {
-			messages.add(new ValidatorMessage("No instrument model instrumentConfiguration id="
+			messages.add(new ValidatorMessage("No instrument model in instrumentConfiguration id="
 					+ instrumentConfiguration.getId(), MessageLevel.ERROR,
 					instrumentConfigurationCvParamContext, this));
 			error = MODEL_ERROR;
@@ -90,7 +90,7 @@ public class InstrumentConfigurationObjectRule extends ObjectRule<InstrumentConf
 		final List<CVParam> cvParams = instrumentConfiguration.getCvParam();
 		if (ObjectRuleUtil.checkAccessionsInCVParams(cvParams, manufacturerAccessions).isEmpty()) {
 			messages.add(new ValidatorMessage(
-					"No instrument manufacturer instrumentConfiguration id="
+					"No instrument manufacturer in instrumentConfiguration id="
 							+ instrumentConfiguration.getId(), MessageLevel.ERROR,
 					instrumentConfigurationCvParamContext, this));
 			error = MANUFACTURER_ERROR;

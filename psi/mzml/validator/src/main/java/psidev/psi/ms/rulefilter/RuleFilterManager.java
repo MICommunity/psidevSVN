@@ -461,4 +461,83 @@ public class RuleFilterManager {
 		}
 		return finalMessages;
 	}
+
+	public void printRuleFilter() {
+		for (UserCondition condition : filter.getUserConditions().getUserCondition()) {
+			System.out.println("\nCondition: " + condition.getId());
+			for (UserOption option : condition.getUserOption()) {
+				System.out.println("\tOption " + option.getId());
+				for (CvMappingRuleToSkip cvMappingRule : option.getCvMappingRuleToSkip()) {
+					System.out.println("\t\tmapping rule id: " + cvMappingRule.getId());
+				}
+				for (ObjectRuleToSkip objectRule : option.getObjectRuleToSkip()) {
+					System.out.println("\t\tobject rule id: " + objectRule.getId());
+				}
+				if (option.getRulesToSkipRef() != null) {
+					for (RulesToSkipRef ruleSetReference : option.getRulesToSkipRef()) {
+						if (filter.getReferences() != null) {
+							for (ReferencedRules referencedRuleSet : filter.getReferences()
+									.getReferencedRules()) {
+								if (referencedRuleSet.getId().equals(ruleSetReference.getRef())) {
+									for (CvMappingRuleToSkip cvMappingRule : referencedRuleSet
+											.getCvMappingRuleToSkip()) {
+										System.out.println("\t\tmapping rule id: "
+												+ cvMappingRule.getId());
+									}
+									for (ObjectRuleToSkip objectRule : referencedRuleSet
+											.getObjectRuleToSkip()) {
+										System.out.println("\t\tobject rule id: "
+												+ objectRule.getId());
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		if (filter.getObjectRuleConditions() != null) {
+			System.out.println("\nObjectRuleConditions:");
+			for (ObjectRuleCondition objectRuleCondition : filter.getObjectRuleConditions()
+					.getObjectRuleCondition()) {
+				System.out.println("\tObject rule condition: " + objectRuleCondition.getId()
+						+ " isValid: " + objectRuleCondition.isValid());
+				for (ObjectRuleToSkip objectRule : objectRuleCondition.getObjectRuleToSkip()) {
+					System.out.println("\t\tobject rule to skip: " + objectRule.getId());
+				}
+				for (CvMappingRuleToSkip cvMappingRule : objectRuleCondition
+						.getCvMappingRuleToSkip()) {
+					System.out.println("\t\tcvMapping rule to skip: " + cvMappingRule.getId());
+				}
+			}
+		}
+		if (filter.getCvMappingRuleConditions() != null) {
+			System.out.println("\ncvMappingRuleConditions:");
+			for (CvMappingRuleCondition cvMappingCondition : filter.getCvMappingRuleConditions()
+					.getCvMappingRuleCondition()) {
+				System.out.println("\tcvMapping rule condition: " + cvMappingCondition.getId()
+						+ " isValid: " + cvMappingCondition.isValid());
+				for (ObjectRuleToSkip objectRule : cvMappingCondition.getObjectRuleToSkip()) {
+					System.out.println("\t\tobject rule to skip: " + objectRule.getId());
+				}
+				for (CvMappingRuleToSkip cvMappingRule : cvMappingCondition
+						.getCvMappingRuleToSkip()) {
+					System.out.println("\t\tcvMapping rule to skip: " + cvMappingRule.getId());
+				}
+			}
+		}
+		if (filter.getMandatoryElements() != null) {
+			System.out.println("\nMandatory elements:");
+			for (MandatoryMzMLElement mandatorymzMLElement : filter.getMandatoryElements()
+					.getMandatoryMzMLElement()) {
+				System.out.println("\tMandatory mzML element: "
+						+ mandatorymzMLElement.getMzMLElement());
+			}
+			for (MandatoryMzIdentMLElement mandatorymzIdentMLElement : filter
+					.getMandatoryElements().getMandatoryMzIdentMLElement()) {
+				System.out.println("\tMandatory mzIdentML element: "
+						+ mandatorymzIdentMLElement.getMzIdentMLElement());
+			}
+		}
+	}
 }

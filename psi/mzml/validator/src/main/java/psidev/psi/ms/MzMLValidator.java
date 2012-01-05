@@ -3,12 +3,16 @@
  */
 package psidev.psi.ms;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -20,17 +24,21 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.xml.sax.SAXException;
 
+import psidev.psi.ms.object_rules.MandatoryElementsObjectRule;
 import psidev.psi.ms.rulefilter.RuleFilterManager;
 import psidev.psi.tools.cvrReader.CvRuleReaderException;
 import psidev.psi.tools.ontology_manager.impl.local.OntologyLoaderException;
+import psidev.psi.tools.validator.Context;
 import psidev.psi.tools.validator.MessageLevel;
 import psidev.psi.tools.validator.Validator;
 import psidev.psi.tools.validator.ValidatorCvContext;
 import psidev.psi.tools.validator.ValidatorException;
 import psidev.psi.tools.validator.ValidatorMessage;
+import psidev.psi.tools.validator.rules.Rule;
 import psidev.psi.tools.validator.rules.codedrule.ObjectRule;
 import psidev.psi.tools.validator.rules.cvmapping.CvRule;
 import uk.ac.ebi.jmzml.MzMLElement;
@@ -73,6 +81,12 @@ public class MzMLValidator extends Validator {
 	private URI schemaUri = null;
 	private boolean skipValidation = false;
 	private ExtendedValidatorReport extendedReport;
+	/**
+	 * counter used for creating unique IDs.
+	 * <p/>
+	 * These are used to create temp files.
+	 */
+	private long uniqId = 0;
 
 	/**
 	 * Constructor to initialise the validator with the custom ontology and
@@ -191,6 +205,7 @@ public class MzMLValidator extends Validator {
 	}
 
 	/**
+	 * Validate an input stream
 	 * 
 	 * @param aInputStream
 	 * @return
@@ -198,7 +213,74 @@ public class MzMLValidator extends Validator {
 	 */
 	public Collection<ValidatorMessage> validate(InputStream aInputStream)
 			throws ValidatorException {
-		return null;
+
+		File tempFile;
+		try {
+			tempFile = storeAsTemporaryFile(aInputStream);
+			return this.startValidation(tempFile);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new ValidatorException("Unable to process input stream", e);
+		}
+
+	}
+
+	/**
+	 * Store the content of the given input stream into a temporary file and
+	 * return its descriptor.
+	 * 
+	 * @param is
+	 *            the input stream to store.
+	 * @return a File descriptor describing a temporary file storing the content
+	 *         of the given input stream.
+	 * @throws IOException
+	 *             if an IO error occur.
+	 */
+	private File storeAsTemporaryFile(InputStream is) throws IOException {
+
+		if (is == null) {
+			throw new IllegalArgumentException("You must give a non null InputStream");
+		}
+
+		BufferedReader in = new BufferedReader(new InputStreamReader(is));
+
+		// Create a temp file and write URL content in it.
+		File tempDirectory = new File(System.getProperty("java.io.tmpdir", "tmp"));
+		if (!tempDirectory.exists()) {
+			if (!tempDirectory.mkdirs()) {
+				throw new IOException("Cannot create temp directory: "
+						+ tempDirectory.getAbsolutePath());
+			}
+		}
+
+		long id = getUniqueId();
+
+		File tempFile = File.createTempFile("validator." + id, ".xml", tempDirectory);
+
+		log.info("The file is temporary store as: " + tempFile.getAbsolutePath());
+
+		BufferedWriter out = new BufferedWriter(new FileWriter(tempFile));
+
+		String line;
+		while ((line = in.readLine()) != null) {
+			out.write(line);
+		}
+
+		in.close();
+
+		out.flush();
+		out.close();
+
+		return tempFile;
+	}
+
+	/**
+	 * Return a unique ID.
+	 * 
+	 * @return a unique id.
+	 */
+	synchronized private long getUniqueId() {
+		return ++uniqId;
 	}
 
 	@Override
@@ -391,6 +473,7 @@ public class MzMLValidator extends Validator {
 	}
 
 	/**
+	 * Starts the validation of a mzML file
 	 * 
 	 * @param mzMLFile
 	 *            File with the mzML file to validate.
@@ -430,25 +513,27 @@ public class MzMLValidator extends Validator {
 
 			boolean valid;
 			try {
-				valid = isValidMzML(mzMLFile, schemaUri, this.msgs);
+				valid = isValidMzML(mzMLFile, schemaUri);
 			} catch (SAXException e) {
 				log.error("ERROR during schema validation.", e);
-				final List<ValidatorMessage> list = new ArrayList<ValidatorMessage>();
-				list.add(new ValidatorMessage("ERROR during schema validation." + e.getMessage(),
-						MessageLevel.ERROR));
-				this.msgs.put("schema_validation", list);
+				final ValidatorMessage message = new ValidatorMessage(
+						"ERROR during schema validation." + e.getMessage(), MessageLevel.ERROR);
+				addValidatorMessage("schema validation", message, this.msgL);
 				valid = false;
 			}
 
-			// handle validation failure
+			// handle schema validation failure
 			if (!valid) {
 				if (this.gui != null) {
-					return getMessageCollection();
+					return clusterByMessagesAndRules(getMessageCollection());
 
 				} else {
 					System.err.println("The provided file is not valid against the mzML schema!");
 					System.err.println("Input file     : " + mzMLFile.getAbsolutePath());
 					System.err.println("Schema location: " + schemaUri);
+					for (ValidatorMessage msg : getMessageCollection()) {
+						System.err.println(msg.getMessage());
+					}
 					System.exit(-1);
 				}
 			}
@@ -491,10 +576,9 @@ public class MzMLValidator extends Validator {
 			// Failure = auto-exit.
 			// @TODO Check internal references with object rules!
 			// ****************************
-			// CHECK MANDATORY ELEMENTS if MIAPE validation
+			// CHECK MANDATORY ELEMENTS
 			// ****************************
-			if (this.gui.isMIAPEValidationSelected())
-				checkMandatoryElements();
+			checkMandatoryElements();
 
 			// ****************************
 			// OBJECT RULES
@@ -517,13 +601,102 @@ public class MzMLValidator extends Validator {
 				return new ArrayList<ValidatorMessage>();
 			}
 		}
-		// return filter messages
+		// If ruleFilterManager is enabled, filter the messages.
+		// Anyway, cluster the messages
 		if (ruleFilterManager != null)
-			return ruleFilterManager.filterValidatorMessages(this.msgs, this.extendedReport);
+			return clusterByMessagesAndRules(ruleFilterManager.filterValidatorMessages(this.msgs,
+					this.extendedReport));
 		else
 			// or return all messages for semantic validation
-			return this.getMessageCollection();
+			return clusterByMessagesAndRules(this.getMessageCollection());
+	}
 
+	/**
+	 * Clusters the ValidatorMessages
+	 * 
+	 * @param messages
+	 * @return
+	 */
+	private Collection<ValidatorMessage> clusterByMessagesAndRules(
+			Collection<ValidatorMessage> messages) {
+		Collection<ValidatorMessage> clusteredMessages = new ArrayList<ValidatorMessage>(
+				messages.size());
+
+		// build a first clustering by message and rule
+		Map<String, Map<Rule, Set<ValidatorMessage>>> clustering = new HashMap<String, Map<Rule, Set<ValidatorMessage>>>();
+		for (ValidatorMessage message : messages) {
+			// if the message doen't have an associated rule, store it directly
+			// (comes from schema validation)
+			if (message.getRule() == null)
+				clusteredMessages.add(message);
+			else {
+				// if contains the same message, from the same rule, cluster it
+				if (clustering.containsKey(message.getMessage())) {
+					Map<Rule, Set<ValidatorMessage>> messagesCluster = clustering.get(message
+							.getMessage());
+
+					if (messagesCluster.containsKey(message.getRule())) {
+						messagesCluster.get(message.getRule()).add(message);
+					} else {
+						Set<ValidatorMessage> validatorContexts = new HashSet<ValidatorMessage>();
+						validatorContexts.add(message);
+						messagesCluster.put(message.getRule(), validatorContexts);
+					}
+				} else {
+					Map<Rule, Set<ValidatorMessage>> messagesCluster = new HashMap<Rule, Set<ValidatorMessage>>();
+
+					Set<ValidatorMessage> validatorContexts = new HashSet<ValidatorMessage>();
+					validatorContexts.add(message);
+					messagesCluster.put(message.getRule(), validatorContexts);
+
+					clustering.put(message.getMessage(), messagesCluster);
+				}
+			}
+		}
+
+		// build a second cluster by message level
+		Map<MessageLevel, ClusteredContext> clusteringByMessageLevel = new HashMap<MessageLevel, ClusteredContext>();
+
+		for (Map.Entry<String, Map<Rule, Set<ValidatorMessage>>> entry : clustering.entrySet()) {
+
+			String message = entry.getKey();
+			Map<Rule, Set<ValidatorMessage>> ruleCluster = entry.getValue();
+
+			// cluster by message level and create proper validatorMessage
+			for (Map.Entry<Rule, Set<ValidatorMessage>> ruleEntry : ruleCluster.entrySet()) {
+				clusteringByMessageLevel.clear();
+
+				Rule rule = ruleEntry.getKey();
+				Set<ValidatorMessage> validatorMessages = ruleEntry.getValue();
+
+				for (ValidatorMessage validatorMessage : validatorMessages) {
+
+					if (clusteringByMessageLevel.containsKey(validatorMessage.getLevel())) {
+						ClusteredContext clusteredContext = clusteringByMessageLevel
+								.get(validatorMessage.getLevel());
+
+						clusteredContext.getContexts().add(validatorMessage.getContext());
+					} else {
+						ClusteredContext clusteredContext = new ClusteredContext();
+
+						clusteredContext.getContexts().add(validatorMessage.getContext());
+
+						clusteringByMessageLevel.put(validatorMessage.getLevel(), clusteredContext);
+					}
+				}
+
+				for (Map.Entry<MessageLevel, ClusteredContext> levelEntry : clusteringByMessageLevel
+						.entrySet()) {
+
+					ValidatorMessage validatorMessage = new ValidatorMessage(message,
+							levelEntry.getKey(), levelEntry.getValue(), rule);
+					clusteredMessages.add(validatorMessage);
+
+				}
+			}
+		}
+
+		return clusteredMessages;
 	}
 
 	/**
@@ -540,10 +713,18 @@ public class MzMLValidator extends Validator {
 				final MzMLObject mzIdentMLObject = unmarshaller.unmarshalFromXpath(
 						mzMLElement.getXpath(), mzMLElement.getClazz());
 				if (mzIdentMLObject == null) {
-					addValidatorMessage("element missing", new ValidatorMessage(
+					final MandatoryElementsObjectRule mandatoryObjectRule = new MandatoryElementsObjectRule(
+							ontologyMngr);
+					final ValidatorMessage validatorMessage = new ValidatorMessage(
 							"The element on xPath:'" + mzMLElement.getXpath()
-									+ "' is required present for the current type of validation.",
-							MessageLevel.ERROR), this.msgL);
+									+ "' is required for the current type of validation.",
+							MessageLevel.ERROR, new Context(mzMLElement.getXpath()),
+							mandatoryObjectRule);
+					// extendedReport.objectRuleExecuted(mandatoryObjectRule,
+					// validatorMessage);
+					// this.addObjectRule(mandatoryObjectRule);
+					addValidatorMessage(validatorMessage.getRule().getId(), validatorMessage,
+							this.msgL);
 				}
 			}
 		}
@@ -760,18 +941,35 @@ public class MzMLValidator extends Validator {
 		}
 	}
 
-	private boolean isValidMzML(File mzML, URI schemaUri,
-			HashMap<String, List<ValidatorMessage>> messages) throws SAXException {
+	/**
+	 * Add a new object rule to the list of object rules only if it is not
+	 * already in the list
+	 * 
+	 * @param rule
+	 * @return true if has been added or false if not
+	 */
+	private boolean addObjectRule(ObjectRule rule) {
+		boolean isNew = true;
+		for (ObjectRule objectRule : this.getObjectRules()) {
+			if (objectRule.getId().equals(rule.getId()))
+				isNew = false;
+		}
+		if (isNew)
+			this.getObjectRules().add(rule);
+		return isNew;
+	}
+
+	private boolean isValidMzML(File mzML, URI schemaUri) throws SAXException {
 		boolean valid;
 
-		MzMLSchemaValidator mzMLValidator = new MzMLSchemaValidator();
+		MzMLSchemaValidator mzMLschemaValidator = new MzMLSchemaValidator();
 		MzMLValidationErrorHandler errorHandler = null;
 		try {
-			mzMLValidator.setSchema(schemaUri);
-			errorHandler = mzMLValidator.validate(new FileReader(mzML));
+			mzMLschemaValidator.setSchema(schemaUri);
+			errorHandler = mzMLschemaValidator.validate(new FileReader(mzML));
 		} catch (FileNotFoundException e) {
 			log.fatal("FATAL: Could not find the MzML instance file while trying to "
-					+ "validate it! Its exisence should have been checked before!", e);
+					+ "validate it! Its existence should have been checked before!", e);
 			System.exit(-1);
 		} catch (MalformedURLException e) {
 			log.fatal("FATAL: The MzML schema URI is not ");

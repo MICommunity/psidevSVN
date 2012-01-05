@@ -619,7 +619,7 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 		jComboValidationType.setEnabled(true);
 		jComboValidationTypeActionPerformed(null);
 
-		showExtendedReportDialog();
+		showExtendedReportDialog(messages.size());
 
 	}
 
@@ -643,28 +643,69 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 
 	}
 
-	private void showExtendedReportDialog() {
+	private void showExtendedReportDialog(int messageNumber) {
 		ExtendedValidatorReport report = validator.getExtendedReport();
 		StringBuilder sb = new StringBuilder("<html><body><table cellpadding='5'>");
+
 		sb.append("<tr align='left'><td>CvMappingRule total count: </td><td>")
 				.append(validator.getCvRuleManager().getCvRules().size()).append("</td></tr>");
 		sb.append("<tr align='left'><td>CvMappingRules not run: </td><td>")
 				.append(report.getCvRulesNotChecked().size()).append("</td></tr>");
-		sb.append(
-				"<tr align='left'><td><font color='red'>CvMappingRules with invalid Xpath: </font></td><td><font color='red'>")
-				.append(report.getCvRulesInvalidXpath().size()).append("</font></td></tr>");
+		sb.append("<tr align='left'><td>");
+		// red in case of more than 0 invalid rules
+		if (report.getCvRulesInvalidXpath().size() > 0)
+			sb.append("<font color='red'>");
+		sb.append("CvMappingRules with invalid Xpath: ");
+		if (report.getCvRulesInvalidXpath().size() > 0)
+			sb.append("</font>");
+		sb.append("</td><td>");
+		if (report.getCvRulesInvalidXpath().size() > 0)
+			sb.append("<font color='red'>");
+		sb.append(report.getCvRulesInvalidXpath().size());
+		if (report.getCvRulesInvalidXpath().size() > 0)
+			sb.append("</font>");
+		sb.append("</td></tr>");
 		sb.append("<tr align='left'><td>CvMappingRules with valid Xpath, but no hit: </td><td>")
 				.append(report.getCvRulesValidXpath().size()).append("</td></tr>");
 		sb.append("<tr align='left'><td>CvMappingRules run & valid: </td><td>")
 				.append(report.getCvRulesValid().size()).append("</td></tr>");
+		sb.append("<tr><td></td></tr>");
 		sb.append("<tr align='left'><td>ObjectRules total count:</td><td>"
 				+ validator.getObjectRules().size() + "</td></tr>");
 		sb.append("<tr align='left'><td>ObjectRules not run:</td><td>"
 				+ report.getObjectRulesNotChecked().size() + "</td></tr>");
-		sb.append("<tr align='left'><td><font color='red'>ObjectRules run invalid:</font></td><td><font color='red'>"
-				+ report.getObjectRulesInvalid().size() + "</font></td></tr>");
+		sb.append("<tr align='left'><td>");
+		// red in case of more than 0 invalid rules
+		if (report.getObjectRulesInvalid().size() > 0)
+			sb.append("<font color='red'>");
+		sb.append("ObjectRules run invalid:");
+		if (report.getObjectRulesInvalid().size() > 0)
+			sb.append("</font>");
+		sb.append("</td><td>");
+		if (report.getObjectRulesInvalid().size() > 0)
+			sb.append("<font color='red'>");
+		sb.append(report.getObjectRulesInvalid().size());
+		if (report.getObjectRulesInvalid().size() > 0)
+			sb.append("</font>");
+		sb.append("</td></tr>");
 		sb.append("<tr align='left'><td>ObjectRules run & valid:</td><td>"
 				+ report.getObjectRulesValid().size() + "</td></tr>");
+		sb.append("<tr><td></td></tr>");
+
+		sb.append("<tr align='left'><td>");
+		if (messageNumber > 0)
+			sb.append("<font color='red'>");
+		sb.append("Messages received: ");
+		if (messageNumber > 0)
+			sb.append("</font>");
+		sb.append("</td><td>");
+		if (messageNumber > 0)
+			sb.append("<font color='red'>");
+		sb.append(messageNumber);
+		if (messageNumber > 0)
+			sb.append("</font>");
+		sb.append("</td></tr>");
+
 		sb.append("</table></body></html>");
 
 		JOptionPane.showMessageDialog(this, new String[] { "", sb.toString() },
@@ -674,7 +715,7 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 
 	private void showMessages(Collection<ValidatorMessage> aMessages) {
 		StringBuffer sb = new StringBuffer(
-				"\n\nThe following messages were obtained during the validation of your XML file:\n\n\n");
+				"\n\nThe following messages were obtained during the validation of your XML file:\n\n");
 		int count = 0;
 		for (Object aMessage : aMessages) {
 			count++;
@@ -685,7 +726,7 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 			if (lMessage.getContext() != null)
 				sb./* append("    Context: "). */append(lMessage.getContext()).append("\n");
 			if (lMessage.getMessage() != null)
-				sb.append("     --> ").append(lMessage.getMessage()).append("\n");
+				sb.append("    --> ").append(lMessage.getMessage()).append("\n");
 
 			if (lMessage.getRule() != null && lMessage.getRule().getHowToFixTips() != null) {
 				for (String howToFixTip : lMessage.getRule().getHowToFixTips()) {
@@ -812,11 +853,11 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 
 	public HashMap<String, String> getSelectedOptions() {
 		HashMap<String, String> conditionSet = new HashMap<String, String>();
-		if (this.jRadioESI.isSelected()) {
+		if (this.jRadioESI.isSelected() && this.jRadioESI.isEnabled()) {
 			conditionSet.put(MaldiOrEsiCondition.getID(), MaldiOrEsiCondition.ESI.getOption());
-		} else if (this.jRadioMALDI.isSelected()) {
+		} else if (this.jRadioMALDI.isSelected() && this.jRadioMALDI.isEnabled()) {
 			conditionSet.put(MaldiOrEsiCondition.getID(), MaldiOrEsiCondition.MALDI.getOption());
-		} else if (this.jRadioOTHER.isSelected()) {
+		} else if (this.jRadioOTHER.isSelected() && this.jRadioOTHER.isEnabled()) {
 			conditionSet.put(MaldiOrEsiCondition.getID(), MaldiOrEsiCondition.OTHER.getOption());
 		}
 		return conditionSet;
