@@ -51,10 +51,10 @@
         </CvMappingRule>
 
         <!-- instrument  -->
-        <CvMappingRule id="instrumentconfiguration_must" cvElementPath="/mzML/instrumentConfigurationList/instrumentConfiguration/cvParam/@accession" requirementLevel="MUST" scopePath="/mzML/instrumentConfigurationList/instrument" cvTermsCombinationLogic="AND">
+        <CvMappingRule id="instrumentconfiguration_must" cvElementPath="/mzML/instrumentConfigurationList/instrumentConfiguration/cvParam/@accession" requirementLevel="MUST" scopePath="/mzML/instrumentConfigurationList/instrumentConfiguration" cvTermsCombinationLogic="AND">
           <CvTerm termAccession="MS:1000031" useTerm="true" termName="instrument model" isRepeatable="false" allowChildren="true" cvIdentifierRef="MS"></CvTerm>
         </CvMappingRule>
-        <CvMappingRule id="instrumentconfiguration_may" cvElementPath="/mzML/instrumentConfigurationList/instrumentConfiguration/cvParam/@accession" requirementLevel="MAY" scopePath="/mzML/instrumentConfigurationList/instrument" cvTermsCombinationLogic="OR">
+        <CvMappingRule id="instrumentconfiguration_may" cvElementPath="/mzML/instrumentConfigurationList/instrumentConfiguration/cvParam/@accession" requirementLevel="MAY" scopePath="/mzML/instrumentConfigurationList/instrumentConfiguration" cvTermsCombinationLogic="OR">
           <CvTerm termAccession="MS:1000496" useTerm="false" termName="instrument attribute" isRepeatable="true" allowChildren="true" cvIdentifierRef="MS"></CvTerm>
           <CvTerm termAccession="MS:1000597" useTerm="false" termName="ion optics type" isRepeatable="false" allowChildren="true" cvIdentifierRef="MS"></CvTerm>
           <CvTerm termAccession="MS:1000487" useTerm="false" termName="ion optics attribute" isRepeatable="true" allowChildren="true" cvIdentifierRef="MS"></CvTerm>
