@@ -125,9 +125,9 @@ public class SpectrumObjectRule extends ObjectRule<Spectrum> {
 	}
 
 	private ValidatorMessage getPrecursorEmptyError(Spectrum spectrum) {
-		return new ValidatorMessage("There is not a spectrum reference for spectrum id='"
-				+ spectrum.getId() + "' (required for MS level >= 2 spectra)", MessageLevel.ERROR,
-				this.precursorContext, this);
+		return new ValidatorMessage(
+				"There is not a spectrum reference for spectrum (required for MS level >= 2 spectra)",
+				MessageLevel.ERROR, this.precursorContext, this);
 	}
 
 	private List<ValidatorMessage> checkMSLevel(Spectrum spectrum) {
