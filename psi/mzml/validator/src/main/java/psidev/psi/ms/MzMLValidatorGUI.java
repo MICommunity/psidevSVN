@@ -80,8 +80,6 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 		jRadioMALDI = new javax.swing.JRadioButton();
 		jRadioESI = new javax.swing.JRadioButton();
 		jRadioOTHER = new javax.swing.JRadioButton();
-		jPanel7 = new javax.swing.JPanel();
-		jButtonValidate = new javax.swing.JButton();
 		jPanel5 = new javax.swing.JPanel();
 		jScrollPane1 = new javax.swing.JScrollPane();
 		jTextAreaMessages = new javax.swing.JTextArea();
@@ -89,6 +87,8 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 		jProgressBar = new javax.swing.JProgressBar();
 		jPanel8 = new javax.swing.JPanel();
 		jComboValidationType = new javax.swing.JComboBox();
+		jPanel7 = new javax.swing.JPanel();
+		jButtonValidate = new javax.swing.JButton();
 
 		jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("File selection"));
 
@@ -143,23 +143,23 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 				org.jdesktop.layout.GroupLayout.LEADING).add(
 				jPanel2Layout
 						.createSequentialGroup()
-						.addContainerGap()
+						.add(27, 27, 27)
 						.add(jRadioInfoLevel)
-						.add(62, 62, 62)
+						.add(50, 50, 50)
 						.add(jRadioWarnLevel)
-						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 69,
-								Short.MAX_VALUE).add(jRadioErrorLevel).addContainerGap()));
+						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 45,
+								Short.MAX_VALUE).add(jRadioErrorLevel).add(42, 42, 42)));
 		jPanel2Layout.setVerticalGroup(jPanel2Layout.createParallelGroup(
 				org.jdesktop.layout.GroupLayout.LEADING).add(
 				jPanel2Layout
 						.createSequentialGroup()
 						.add(jPanel2Layout
 								.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-								.add(jRadioInfoLevel).add(jRadioErrorLevel).add(jRadioWarnLevel))
+								.add(jRadioWarnLevel).add(jRadioInfoLevel).add(jRadioErrorLevel))
 						.addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
 								Short.MAX_VALUE)));
 
-		jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("User selection"));
+		jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Select one option"));
 
 		jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Ionization source"));
 
@@ -196,32 +196,6 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 						.addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
 								Short.MAX_VALUE)));
 
-		jPanel7.setBorder(javax.swing.BorderFactory.createTitledBorder("Action"));
-
-		jButtonValidate.setText("Validate!");
-		jButtonValidate.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				jButtonValidateActionPerformed(evt);
-			}
-		});
-
-		org.jdesktop.layout.GroupLayout jPanel7Layout = new org.jdesktop.layout.GroupLayout(jPanel7);
-		jPanel7.setLayout(jPanel7Layout);
-		jPanel7Layout.setHorizontalGroup(jPanel7Layout.createParallelGroup(
-				org.jdesktop.layout.GroupLayout.LEADING).add(
-				jPanel7Layout
-						.createSequentialGroup()
-						.addContainerGap()
-						.add(jButtonValidate, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 242,
-								Short.MAX_VALUE).addContainerGap()));
-		jPanel7Layout.setVerticalGroup(jPanel7Layout.createParallelGroup(
-				org.jdesktop.layout.GroupLayout.LEADING).add(
-				jPanel7Layout
-						.createSequentialGroup()
-						.add(jButtonValidate)
-						.addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-								Short.MAX_VALUE)));
-
 		org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
 		jPanel3.setLayout(jPanel3Layout);
 		jPanel3Layout.setHorizontalGroup(jPanel3Layout.createParallelGroup(
@@ -232,21 +206,14 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 						.add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
 								org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
 								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-						.add(jPanel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-								org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-						.addContainerGap()));
+						.addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+								Short.MAX_VALUE)));
 		jPanel3Layout.setVerticalGroup(jPanel3Layout.createParallelGroup(
 				org.jdesktop.layout.GroupLayout.LEADING).add(
 				jPanel3Layout
 						.createSequentialGroup()
-						.add(jPanel3Layout
-								.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-								.add(jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-										org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-										Short.MAX_VALUE)
-								.add(jPanel7, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 63,
-										org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+						.add(jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+								org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 						.addContainerGap()));
 
 		jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder("Messages"));
@@ -319,7 +286,7 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 						.add(jComboValidationType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
 								org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
 								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-						.addContainerGap(56, Short.MAX_VALUE)));
+						.addContainerGap(39, Short.MAX_VALUE)));
 		jPanel8Layout.setVerticalGroup(jPanel8Layout.createParallelGroup(
 				org.jdesktop.layout.GroupLayout.LEADING).add(
 				jPanel8Layout
@@ -329,6 +296,30 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
 						.addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
 								Short.MAX_VALUE)));
+
+		jPanel7.setBorder(javax.swing.BorderFactory.createTitledBorder("Action"));
+
+		jButtonValidate.setText("Validate!");
+		jButtonValidate.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				jButtonValidateActionPerformed(evt);
+			}
+		});
+
+		org.jdesktop.layout.GroupLayout jPanel7Layout = new org.jdesktop.layout.GroupLayout(jPanel7);
+		jPanel7.setLayout(jPanel7Layout);
+		jPanel7Layout.setHorizontalGroup(jPanel7Layout.createParallelGroup(
+				org.jdesktop.layout.GroupLayout.LEADING).add(
+				org.jdesktop.layout.GroupLayout.TRAILING,
+				jPanel7Layout
+						.createSequentialGroup()
+						.addContainerGap()
+						.add(jButtonValidate, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 242,
+								Short.MAX_VALUE).addContainerGap()));
+		jPanel7Layout.setVerticalGroup(jPanel7Layout.createParallelGroup(
+				org.jdesktop.layout.GroupLayout.LEADING).add(
+				jPanel7Layout.createSequentialGroup().addContainerGap().add(jButtonValidate)
+						.addContainerGap(38, Short.MAX_VALUE)));
 
 		org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
 		this.setLayout(layout);
@@ -342,48 +333,70 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 								.add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
 										org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
 										Short.MAX_VALUE)
-								.add(org.jdesktop.layout.GroupLayout.TRAILING,
-										layout.createSequentialGroup()
-												.add(jPanel2,
-														org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-														org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-														org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-												.addPreferredGap(
-														org.jdesktop.layout.LayoutStyle.RELATED)
-												.add(jPanel8,
-														org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-														org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-														Short.MAX_VALUE))
-								.add(jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-										org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-										Short.MAX_VALUE)
 								.add(jPanel6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
 										org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
 										Short.MAX_VALUE)
 								.add(jPanel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
 										org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-										Short.MAX_VALUE)).addContainerGap()));
-		layout.setVerticalGroup(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+										Short.MAX_VALUE)
+								.add(layout
+										.createSequentialGroup()
+										.add(layout
+												.createParallelGroup(
+														org.jdesktop.layout.GroupLayout.LEADING,
+														false)
+												.add(jPanel2,
+														org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+														org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+														Short.MAX_VALUE)
+												.add(jPanel3,
+														org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+														org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+														Short.MAX_VALUE))
+										.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+										.add(layout
+												.createParallelGroup(
+														org.jdesktop.layout.GroupLayout.LEADING)
+												.add(jPanel8,
+														org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+														org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+														Short.MAX_VALUE)
+												.add(jPanel7,
+														org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+														org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+														Short.MAX_VALUE)))).addContainerGap()));
+		layout.setVerticalGroup(layout
+				.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
 				.add(layout
 						.createSequentialGroup()
 						.addContainerGap()
 						.add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
 								org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
 								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+						.add(layout
+								.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+								.add(layout
+										.createSequentialGroup()
+										.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+										.add(jPanel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+												org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+												Short.MAX_VALUE))
+								.add(org.jdesktop.layout.GroupLayout.TRAILING,
+										layout.createSequentialGroup()
+												.add(8, 8, 8)
+												.add(jPanel2,
+														org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
+														org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+														org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
 						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
 						.add(layout
-								.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING,
-										false)
-								.add(jPanel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
+								.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+								.add(jPanel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
 										org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
 										Short.MAX_VALUE)
-								.add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
+								.add(jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
 										org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-										org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-						.add(jPanel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-								org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
-								org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+										Short.MAX_VALUE))
 						.addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
 						.add(jPanel6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
 								org.jdesktop.layout.GroupLayout.DEFAULT_SIZE,
@@ -461,7 +474,7 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 		if (isMIAPEValidationSelected()) {
 			try {
 				this.ruleFilterManager = new RuleFilterManager(new File(
-						getProperty("filter.rule.file")));
+						getProperty("miape.filter.rule.file")));
 				// filter rules by the options of the user
 			} catch (JAXBException e1) {
 				// no filter rules
@@ -590,16 +603,7 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 		}
 		Collection<ValidatorMessage> messages = (Collection<ValidatorMessage>) sw.get();
 
-		if (messages != null && messages.size() > 0) {
-			showMessages(messages);
-		} else {
-			jTextAreaMessages.setText("\n\nNo messages were returned by the validator.");
-			if (error == null) {
-				JOptionPane.showMessageDialog(MzMLValidatorGUI.this,
-						"Your mzML file validated at the current message level.",
-						"No messages produced.", JOptionPane.INFORMATION_MESSAGE);
-			}
-		}
+		showMessages(messages);
 
 		jProgressBar.setIndeterminate(false);
 		jProgressBar.setValue(0);
@@ -620,6 +624,7 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 		jComboValidationTypeActionPerformed(null);
 
 		showExtendedReportDialog(messages.size());
+		// showReportDialog();
 
 	}
 
@@ -648,7 +653,7 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 		StringBuilder sb = new StringBuilder("<html><body><table cellpadding='5'>");
 
 		sb.append("<tr align='left'><td>CvMappingRule total count: </td><td>")
-				.append(validator.getCvRuleManager().getCvRules().size()).append("</td></tr>");
+				.append(report.getTotalCvRules()).append("</td></tr>");
 		sb.append("<tr align='left'><td>CvMappingRules not run: </td><td>")
 				.append(report.getCvRulesNotChecked().size()).append("</td></tr>");
 		sb.append("<tr align='left'><td>");
@@ -671,14 +676,14 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 				.append(report.getCvRulesValid().size()).append("</td></tr>");
 		sb.append("<tr><td></td></tr>");
 		sb.append("<tr align='left'><td>ObjectRules total count:</td><td>"
-				+ validator.getObjectRules().size() + "</td></tr>");
+				+ report.getTotalObjectRules() + "</td></tr>");
 		sb.append("<tr align='left'><td>ObjectRules not run:</td><td>"
 				+ report.getObjectRulesNotChecked().size() + "</td></tr>");
 		sb.append("<tr align='left'><td>");
 		// red in case of more than 0 invalid rules
 		if (report.getObjectRulesInvalid().size() > 0)
 			sb.append("<font color='red'>");
-		sb.append("ObjectRules run invalid:");
+		sb.append("ObjectRules run & invalid:");
 		if (report.getObjectRulesInvalid().size() > 0)
 			sb.append("</font>");
 		sb.append("</td><td>");
@@ -714,28 +719,45 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 	}
 
 	private void showMessages(Collection<ValidatorMessage> aMessages) {
-		StringBuffer sb = new StringBuffer(
-				"\n\nThe following messages were obtained during the validation of your XML file:\n\n");
-		int count = 0;
-		for (Object aMessage : aMessages) {
-			count++;
-			ValidatorMessage lMessage = (ValidatorMessage) aMessage;
-			sb.append("\n\nMessage ").append(count).append(":\n");
-			if (lMessage.getLevel() != null)
-				sb.append("    Level: ").append(lMessage.getLevel()).append("\n");
-			if (lMessage.getContext() != null)
-				sb./* append("    Context: "). */append(lMessage.getContext()).append("\n");
-			if (lMessage.getMessage() != null)
-				sb.append("    --> ").append(lMessage.getMessage()).append("\n");
+		Collection<ValidatorMessage> messages = (Collection<ValidatorMessage>) sw.get();
+		if (messages != null && messages.size() > 0) {
+			this.jTextAreaMessages.setText(printValidatorMessages(messages));
+			this.jTextAreaMessages.setCaretPosition(0);
+		} else {
+			this.jTextAreaMessages.setText("\n\nNo messages were returned by the validator.");
+			if (error == null) {
+				JOptionPane.showMessageDialog(MzMLValidatorGUI.this,
+						"Your mzIdentML file validated at the current message level.",
+						"No messages produced.", JOptionPane.INFORMATION_MESSAGE);
+			}
+		}
 
-			if (lMessage.getRule() != null && lMessage.getRule().getHowToFixTips() != null) {
-				for (String howToFixTip : lMessage.getRule().getHowToFixTips()) {
-					sb.append("    Tip: " + howToFixTip).append("\n");
+		this.jTextAreaMessages.append(validator.printValidatorReport());
+		// this.jTextAreaMessages.append(validator.printCvContextReport());
+	}
+
+	private String printValidatorMessages(Collection<ValidatorMessage> messages) {
+		StringBuffer sb = new StringBuffer(
+				"\n\nThe following messages were obtained during the validation of your XML file:\n\n\n");
+		int count = 0;
+		for (ValidatorMessage message : messages) {
+			// only show messages that have the same (or higher) message level
+			// as selected
+			if (message.getLevel().isSame(getLevel()) || message.getLevel().isHigher(getLevel())) {
+				count++;
+				sb.append("\n\nMessage ").append(count).append(":\n");
+				sb.append("    Level: ").append(message.getLevel()).append("\n");
+				sb.append("    ").append(message.getContext()).append("\n");
+				sb.append("    --> ").append(message.getMessage()).append("\n");
+				if (message.getRule() != null && message.getRule().getHowToFixTips() != null) {
+					for (String howToFixTip : message.getRule().getHowToFixTips()) {
+						sb.append("    Tip: " + howToFixTip).append("\n");
+					}
 				}
 			}
 		}
-		jTextAreaMessages.setText(sb.toString());
-		jTextAreaMessages.setCaretPosition(0);
+
+		return sb.toString();
 	}
 
 	private void selectFile() {
@@ -853,11 +875,11 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 
 	public HashMap<String, String> getSelectedOptions() {
 		HashMap<String, String> conditionSet = new HashMap<String, String>();
-		if (this.jRadioESI.isSelected() && this.jRadioESI.isEnabled()) {
+		if (this.jRadioESI.isSelected()) {
 			conditionSet.put(MaldiOrEsiCondition.getID(), MaldiOrEsiCondition.ESI.getOption());
-		} else if (this.jRadioMALDI.isSelected() && this.jRadioMALDI.isEnabled()) {
+		} else if (this.jRadioMALDI.isSelected()) {
 			conditionSet.put(MaldiOrEsiCondition.getID(), MaldiOrEsiCondition.MALDI.getOption());
-		} else if (this.jRadioOTHER.isSelected() && this.jRadioOTHER.isEnabled()) {
+		} else if (this.jRadioOTHER.isSelected()) {
 			conditionSet.put(MaldiOrEsiCondition.getID(), MaldiOrEsiCondition.OTHER.getOption());
 		}
 		return conditionSet;
