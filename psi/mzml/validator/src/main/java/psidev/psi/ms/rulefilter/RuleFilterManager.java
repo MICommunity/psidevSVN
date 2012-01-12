@@ -435,8 +435,10 @@ public class RuleFilterManager {
 			HashMap<String, List<ValidatorMessage>> msgs, ExtendedValidatorReport extendedReport) {
 		ArrayList<ValidatorMessage> finalMessages = new ArrayList<ValidatorMessage>();
 
+		// for each message, check if the rule that generated it is in the list
+		// of rules to skip
 		if (msgs != null && !msgs.isEmpty()) {
-
+			
 			for (String ruleIdentifier : msgs.keySet()) {
 				boolean report = true;
 				// if the rule that generated the messages is in the list of
@@ -455,7 +457,7 @@ public class RuleFilterManager {
 					finalMessages.addAll(msgs.get(ruleIdentifier));
 				} else {
 					// move the rule to the list of non checked rules
-					extendedReport.setRuleAsSkipped(ruleIdentifier);
+					extendedReport.setObjectRuleAsSkipped(ruleIdentifier);
 				}
 			}
 		}
