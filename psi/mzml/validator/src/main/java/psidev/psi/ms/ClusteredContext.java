@@ -33,13 +33,12 @@ public class ClusteredContext extends Context {
 	public String toString() {
 		StringBuilder sb = new StringBuilder(128);
 
-		for (Context context : contexts) {
-
-			sb.append(context.toString());
-			sb.append("\n");
+		if (!contexts.isEmpty()) {
+			sb.append(contexts.iterator().next());
+			if (contexts.size() > 1)
+				sb.append(" in " + getNumberOfContexts() + " locations");
 		}
 
-		sb.append(")");
 		return sb.toString();
 	}
 }
