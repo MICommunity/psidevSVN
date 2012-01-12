@@ -70,7 +70,7 @@ public class MzMLValidator extends Validator {
 	// sampleList, instrumentConfigurationList, scanSettingsList,
 	// software,
 	// dataProcessingList, chromatogram, spectrum, complete
-	private static final int PROGRESS_STEPS = 12;
+	private static final int PROGRESS_STEPS = 16;
 	// private MzMLValidatorGUI gui = null;
 	private MzMLValidatorGUI gui = null;
 	private int progress = 0;
@@ -140,6 +140,7 @@ public class MzMLValidator extends Validator {
 		} catch (URISyntaxException e) {
 			throw new IllegalStateException("Could not create URI for schema location!", e);
 		}
+
 	}
 
 	/**
@@ -421,43 +422,67 @@ public class MzMLValidator extends Validator {
 	}
 
 	public String printValidatorReport() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("\n\n\n---------- ---------- Rule statistics ---------- ----------\n\n");
+		ExtendedValidatorReport report = this.getExtendedReport();
+		if (report != null) {
+			if (report.getTotalCvRules() == 0)
+				report.setCvRules(getCvRuleManager().getCvRules(), this.ruleFilterManager);
 
-		if (getCvRuleManager() != null && getReport() != null) {
-			sb.append("\tCvMappingRule total count: ")
-					.append(getCvRuleManager().getCvRules().size()).append("\n");
-			sb.append("\tCvMappingRules not run: ")
-					.append(getReport().getCvRulesNotChecked().size()).append("\n");
-			for (CvRule rule : getReport().getCvRulesNotChecked()) {
+			int cvRulesTotal = report.getTotalCvRules();
+			int objectRulesTotal = report.getTotalObjectRules();
+
+			StringBuilder sb = new StringBuilder();
+			sb.append("\n\n\n---------- ---------- Rule statistics ---------- ----------\n\n");
+
+			sb.append("\tCvMappingRule total count: ").append(cvRulesTotal).append("\n");
+			sb.append("\tCvMappingRules not run: ").append(report.getCvRulesNotChecked().size())
+					.append("\n");
+			for (CvRule rule : report.getCvRulesNotChecked()) {
 				sb.append("\t\trule: ").append(rule.getId()).append("\n");
 			}
 			sb.append("\tCvMappingRules with invalid Xpath: ")
-					.append(getReport().getCvRulesInvalidXpath().size()).append("\n");
-			for (CvRule rule : getReport().getCvRulesInvalidXpath()) {
+					.append(report.getCvRulesInvalidXpath().size()).append("\n");
+			for (CvRule rule : report.getCvRulesInvalidXpath()) {
 				sb.append("\t\trule: ").append(rule.getId()).append("\n");
 			}
 			sb.append("\tCvMappingRules valid Xpath, but no hit: ")
-					.append(getReport().getCvRulesValidXpath().size()).append("\n");
-			for (CvRule rule : getReport().getCvRulesValidXpath()) {
+					.append(report.getCvRulesValidXpath().size()).append("\n");
+			for (CvRule rule : report.getCvRulesValidXpath()) {
 				sb.append("\t\trule: ").append(rule.getId()).append("\n");
 			}
-			sb.append("\tCvMappingRules run & valid: ")
-					.append(getReport().getCvRulesValid().size()).append("\n");
-			for (CvRule rule : getReport().getCvRulesValid()) {
+			sb.append("\tCvMappingRules run & valid: ").append(report.getCvRulesValid().size())
+					.append("\n");
+			for (CvRule rule : report.getCvRulesValid()) {
+				sb.append("\t\trule: ").append(rule.getId()).append("\n");
+			}
+			sb.append("\tObjectRule total count: ").append(objectRulesTotal).append("\n");
+			sb.append("\tObjectRules not run: ").append(report.getObjectRulesNotChecked().size())
+					.append("\n");
+			for (ObjectRule rule : report.getObjectRulesNotChecked()) {
+				sb.append("\t\trule: ").append(rule.getId()).append("\n");
+			}
+			sb.append("\tObjectRules run & invalid: ")
+					.append(report.getObjectRulesInvalid().size()).append("\n");
+			for (ObjectRule rule : report.getObjectRulesInvalid()) {
+				sb.append("\t\trule: ").append(rule.getId()).append("\n");
+			}
+			sb.append("\tObjectRules run & valid: ").append(report.getObjectRulesValid().size())
+					.append("\n");
+			for (ObjectRule rule : report.getObjectRulesValid()) {
 				sb.append("\t\trule: ").append(rule.getId()).append("\n");
 			}
 			sb.append("---------- ---------- ---------- ---------- ----------\n");
 
+			return sb.toString();
 		}
-		return sb.toString();
+		return "";
 	}
 
 	public String printCvContextReport() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("\n\n\n---------- ---------- CvContext statistics ---------- ----------\n\n");
 
-		if (ValidatorCvContext.getInstance() != null) {
+		if (ValidatorCvContext.getInstance() != null
+				&& !ValidatorCvContext.getInstance().getNotRecognisedXpath().isEmpty()) {
+			sb.append("\n\n\n---------- ---------- CvContext statistics ---------- ----------\n\n");
 			// check for terms that were not anticipated with the rules in the
 			// CV mapping file.
 			for (String xpath : ValidatorCvContext.getInstance().getNotRecognisedXpath()) {
@@ -500,11 +525,21 @@ public class MzMLValidator extends Validator {
 			guiProgressNote = "Skipping schema validation!";
 			if (this.gui != null) {
 				this.gui.setProgress(++progress, guiProgressNote);
+				try {
+					// sleep for a second to give the user time to see this
+					// important message
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// if we are interrupted (which should not happen) we just
+					// go
+					// on.
+				}
 			} else {
 				System.out.println(guiProgressNote);
 			}
+
 		} else { // validating
-			guiProgressNote = "Validating against schema.";
+			guiProgressNote = "Validating against schema (depending on the file size, this might take a while)...";
 			if (this.gui != null) {
 				this.gui.setProgress(++progress, guiProgressNote);
 			} else {
@@ -550,7 +585,7 @@ public class MzMLValidator extends Validator {
 
 			// Validate CV Mapping Rules
 			if (this.gui != null) { // report progress to the GUI if present
-				this.gui.setProgress(++progress, "Reading CV rules...");
+				this.gui.setProgress(++progress, "Checking internal consistency of CV rules......");
 			}
 
 			addMessages(this.checkCvMappingRules(), this.msgL);
@@ -601,14 +636,21 @@ public class MzMLValidator extends Validator {
 				return new ArrayList<ValidatorMessage>();
 			}
 		}
+
 		// If ruleFilterManager is enabled, filter the messages.
 		// Anyway, cluster the messages
-		if (ruleFilterManager != null)
-			return clusterByMessagesAndRules(ruleFilterManager.filterValidatorMessages(this.msgs,
-					this.extendedReport));
-		else
+		if (ruleFilterManager != null) {
+			final Collection<ValidatorMessage> filteredValidatorMessages = ruleFilterManager
+					.filterValidatorMessages(this.msgs, this.extendedReport);
+			final Collection<ValidatorMessage> clusteredMessages = this
+					.clusterByMessagesAndRules(filteredValidatorMessages);
+			return clusteredMessages;
+		} else {
 			// or return all messages for semantic validation
-			return clusterByMessagesAndRules(this.getMessageCollection());
+			final Collection<ValidatorMessage> clusteredMessages = this
+					.clusterByMessagesAndRules(this.getMessageCollection());
+			return clusteredMessages;
+		}
 	}
 
 	/**
@@ -638,16 +680,16 @@ public class MzMLValidator extends Validator {
 					if (messagesCluster.containsKey(message.getRule())) {
 						messagesCluster.get(message.getRule()).add(message);
 					} else {
-						Set<ValidatorMessage> validatorContexts = new HashSet<ValidatorMessage>();
-						validatorContexts.add(message);
-						messagesCluster.put(message.getRule(), validatorContexts);
+						Set<ValidatorMessage> validatorMessages = new HashSet<ValidatorMessage>();
+						validatorMessages.add(message);
+						messagesCluster.put(message.getRule(), validatorMessages);
 					}
 				} else {
 					Map<Rule, Set<ValidatorMessage>> messagesCluster = new HashMap<Rule, Set<ValidatorMessage>>();
 
-					Set<ValidatorMessage> validatorContexts = new HashSet<ValidatorMessage>();
-					validatorContexts.add(message);
-					messagesCluster.put(message.getRule(), validatorContexts);
+					Set<ValidatorMessage> validatorMessages = new HashSet<ValidatorMessage>();
+					validatorMessages.add(message);
+					messagesCluster.put(message.getRule(), validatorMessages);
 
 					clustering.put(message.getMessage(), messagesCluster);
 				}
@@ -738,17 +780,6 @@ public class MzMLValidator extends Validator {
 		return null;
 	}
 
-	/**
-	 * Get extended report
-	 * 
-	 * @return the extended report
-	 */
-	public ExtendedValidatorReport getExtendedReport() {
-		// add up to date cvMappingRule status
-		extendedReport.setCvRules(getCvRuleManager().getCvRules());
-		return extendedReport;
-
-	}
 
 	private Collection<ValidatorMessage> getMessageCollection() {
 		Collection<ValidatorMessage> ret = new HashSet<ValidatorMessage>();
@@ -911,7 +942,8 @@ public class MzMLValidator extends Validator {
 							if (resultCheck != null && !resultCheck.isEmpty()) {
 								valid = false;
 							}
-							ruleFilterManager.updateRulesToSkipByCvMappingRuleResult(rule, valid);
+							this.ruleFilterManager.updateRulesToSkipByCvMappingRuleResult(rule,
+									valid);
 						}
 						messages.addAll(resultCheck);
 					}
@@ -935,9 +967,9 @@ public class MzMLValidator extends Validator {
 				list.add(validatorMessage);
 				this.msgs.put(ruleId, list);
 			}
-			this.extendedReport.setRuleAsInvalid(ruleId);
+			this.extendedReport.setObjectRuleAsInvalid(ruleId);
 		} else {
-			this.extendedReport.setRuleAsSkipped(ruleId);
+			this.extendedReport.setObjectRuleAsSkipped(ruleId);
 		}
 	}
 
@@ -1176,16 +1208,28 @@ public class MzMLValidator extends Validator {
 
 		// delete all objectRules
 		this.getObjectRules().clear();
+		// delete all cvMappingRules
 		this.getCvRuleManager().getCvRules().clear();
 
-		// set the new cvMappingRules rules
+		// set the new cvMapping rules
 		final FileInputStream cvMappingRuleFile = new FileInputStream(cvMappingRuleFileName);
 		this.setCvMappingRules(cvMappingRuleFile);
 		cvMappingRuleFile.close();
 
-		// set the new cvMappingRules rules
+		// set the new objectrules
 		final FileInputStream objectRuleFile = new FileInputStream(objectRuleFileName);
 		this.setObjectRules(objectRuleFile);
 		objectRuleFile.close();
+
+	}
+
+	public ExtendedValidatorReport getExtendedReport() {
+		if (this.extendedReport != null) {
+			if (this.extendedReport.getTotalCvRules() == 0)
+				this.extendedReport.setCvRules(this.getCvRuleManager().getCvRules(),
+						this.ruleFilterManager);
+		}
+		return this.extendedReport;
+
 	}
 }
