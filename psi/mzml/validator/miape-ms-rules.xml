@@ -52,12 +52,12 @@
 			<CvTerm termAccession="MS:1000073" useTerm="true" termName="electrospray ionization" isRepeatable="false" allowChildren="true" cvIdentifierRef="MS"/>
 		</CvMappingRule>
 		<CvMappingRule id="source_esi_must" cvElementPath="/mzML/instrumentConfigurationList/instrumentConfiguration/componentList/source/cvParam/@accession" requirementLevel="MUST" scopePath="/mzML/instrumentConfigurationList/instrumentConfiguration/componentList/source" cvTermsCombinationLogic="AND"> 
-			<CvTerm termAccession="MS:XXXXXXX" useTerm="false" termName="supply type" isRepeatable="false" allowChildren="true" cvIdentifierRef="MS"/> <!-- CV not defined yet -->
-			<CvTerm termAccession="MS:XXXXXXX" useTerm="true" termName="source interface manufacturer" isRepeatable="false" allowChildren="false" cvIdentifierRef="MS"/> <!-- CV not defined yet -->
-			<CvTerm termAccession="MS:XXXXXXX" useTerm="true" termName="source interface model" isRepeatable="false" allowChildren="false" cvIdentifierRef="MS"/> <!-- CV not defined yet -->
-			<CvTerm termAccession="MS:XXXXXXX" useTerm="true" termName="source sprayer type" isRepeatable="false" allowChildren="true" cvIdentifierRef="MS"/> <!-- CV not defined yet -->
-			<CvTerm termAccession="MS:XXXXXXX" useTerm="true" termName="source sprayer manufacturer" isRepeatable="false" allowChildren="false" cvIdentifierRef="MS"/> <!-- CV not defined yet -->
-			<CvTerm termAccession="MS:XXXXXXX" useTerm="true" termName="source sprayer model" isRepeatable="false" allowChildren="false" cvIdentifierRef="MS"/> <!-- CV not defined yet -->
+			<CvTerm termAccession="MS:1000458" useTerm="false" termName="electrospray supply type" isRepeatable="false" allowChildren="true" cvIdentifierRef="MS"/> 
+			<CvTerm termAccession="MS:1001953" useTerm="true" termName="source interface manufacturer" isRepeatable="false" allowChildren="false" cvIdentifierRef="MS"/> 
+			<CvTerm termAccession="MS:1001932" useTerm="true" termName="source interface model" isRepeatable="false" allowChildren="false" cvIdentifierRef="MS"/> 
+			<CvTerm termAccession="MS:1001934" useTerm="true" termName="source sprayer type" isRepeatable="false" allowChildren="true" cvIdentifierRef="MS"/> 
+			<CvTerm termAccession="MS:1001935" useTerm="true" termName="source sprayer manufacturer" isRepeatable="false" allowChildren="false" cvIdentifierRef="MS"/> 
+			<CvTerm termAccession="MS:1001936" useTerm="true" termName="source sprayer model" isRepeatable="false" allowChildren="false" cvIdentifierRef="MS"/> 
 		</CvMappingRule>
 		
 		<!-- NEW RULE -->
@@ -71,7 +71,7 @@
 			<CvTerm termAccession="MS:1000075" useTerm="true" termName="matrix-assisted laser desorption ionization" isRepeatable="false" allowChildren="false" cvIdentifierRef="MS"/>
 		</CvMappingRule>
 		<CvMappingRule id="source_maldi_must" cvElementPath="/mzML/instrumentConfigurationList/instrumentConfiguration/componentList/source/cvParam/@accession" requirementLevel="MUST" scopePath="/mzML/instrumentConfigurationList/instrumentConfiguration/componentList/source" cvTermsCombinationLogic="AND">
-			<CvTerm termAccession="MS:XXXXXXX" useTerm="false" termName="sample plate type" isRepeatable="false" allowChildren="true" cvIdentifierRef="MS"/> <!-- CV not defined yet -->
+			<CvTerm termAccession="MS:1001938" useTerm="false" termName="sample plate type" isRepeatable="false" allowChildren="true" cvIdentifierRef="MS"/> <!-- CV not defined yet -->
 			<CvTerm termAccession="MS:1000834" useTerm="true" termName="matrix solution" isRepeatable="false" allowChildren="false" cvIdentifierRef="MS"/>
 			<!-- MOVED to XOR rule --> <!--<CvTerm termAccession="MS:1000135" useTerm="true" termName="post-source decay" isRepeatable="false" allowChildren="false" cvIdentifierRef="MS"/>-->
 			<!-- MOVED to XOR rule --> <!--<CvTerm termAccession="MS:1000075" useTerm="true" termName="matrix-assisted laser desorption ionization" isRepeatable="false" allowChildren="false" cvIdentifierRef="MS"/>-->
@@ -132,7 +132,7 @@
 			<!-- REMOVED <CvTerm termAccession="MS:1000531" useTerm="false" termName="software" isRepeatable="false" allowChildren="true" cvIdentifierRef="MS"></CvTerm> -->
 			<CvTerm termAccession="MS:1001455" useTerm="false" termName="acquisition software" isRepeatable="false" allowChildren="true" cvIdentifierRef="MS"/> <!-- ADDED -->
 			<CvTerm termAccession="MS:1001457" useTerm="false" termName="data processing software" isRepeatable="false" allowChildren="true" cvIdentifierRef="MS"/> <!-- ADDED -->
-			<CvTerm termAccession="MS:XXXXXXX" useTerm="true" termName="acquisition parameter" isRepeatable="false" allowChildren="false" cvIdentifierRef="MS"/> <!-- ADDED -->
+			<CvTerm termAccession="MS:1001954" useTerm="true" termName="acquisition parameter" isRepeatable="false" allowChildren="false" cvIdentifierRef="MS"/> <!-- ADDED -->
 		</CvMappingRule>
 		
 		<!--  data processing -->
