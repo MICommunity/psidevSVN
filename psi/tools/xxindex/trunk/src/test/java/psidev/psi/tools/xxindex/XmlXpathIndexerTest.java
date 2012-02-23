@@ -6,8 +6,10 @@ import psidev.psi.tools.xxindex.index.IndexElement;
 import psidev.psi.tools.xxindex.index.StandardXpathIndex;
 import psidev.psi.tools.xxindex.index.XmlXpathIndexer;
 import psidev.psi.tools.xxindex.index.XpathIndex;
+import uk.ac.ebi.pride.util.file.FileUtil;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -322,6 +324,20 @@ public class XmlXpathIndexerTest {
 
         int regexCnt = index.getElementCount("/first/second/SiteRegexp");
         Assert.assertEquals(1, regexCnt);
+
+    }
+
+    @Test
+    public void testIndexChecksum() throws Exception {
+
+        URL fileUrl = XmlXpathIndexerTest.class.getResource( "/DIP-sample.xml" );
+
+        File file = new File( fileUrl.toURI() );
+        XpathIndex index = XmlXpathIndexer.buildIndex( new FileInputStream(file), null, true );
+
+        String indexChecksum = index.getChecksum();
+        String fileChecksum = FileUtil.calculateChecksum(file);
+        Assert.assertEquals("Checksums are not the same!", fileChecksum, indexChecksum);
 
     }
 

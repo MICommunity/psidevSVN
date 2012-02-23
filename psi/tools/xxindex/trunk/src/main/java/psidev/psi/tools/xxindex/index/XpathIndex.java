@@ -23,4 +23,6 @@ public interface XpathIndex {
     boolean isRecordLineNumber();
 
     String print();
+
+    String getChecksum();
 }

@@ -7,6 +7,9 @@ import org.apache.commons.logging.LogFactory;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ListIterator;
 import java.util.Set;
 import java.util.Stack;
@@ -23,6 +26,8 @@ import java.util.Stack;
 public class XmlXpathIndexer {
 
     private static final Log log = LogFactory.getLog( XmlXpathIndexer.class );
+
+    private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 
     ////////////////////
     // Index methods
@@ -114,9 +119,20 @@ public class XmlXpathIndexer {
      * @see this#buildIndex(java.io.InputStream)
      */
     public static StandardXpathIndex buildIndex(InputStream is, Set<String> aXpathInclusionSet, boolean recordLineNumber, boolean ignoreNSPrefix) throws IOException {
-        BufferedInputStream bis = new BufferedInputStream(is);
+        BufferedInputStream bufStream = new BufferedInputStream(is);
 
-        CountingInputStream cis = new CountingInputStream( bis );
+        InputStream tmpStream;
+        DigestInputStream digestStream;
+        try {
+            digestStream = new DigestInputStream(bufStream, MessageDigest.getInstance("MD5"));
+            tmpStream = digestStream;
+        } catch (NoSuchAlgorithmException e) {
+            log.error("Failed to calculate checksum!", e);
+            digestStream = null;
+            tmpStream = bufStream;
+        }
+
+        CountingInputStream countStream = new CountingInputStream( tmpStream );
 
         StandardXpathIndex index = new StandardXpathIndex(aXpathInclusionSet);
 
@@ -141,7 +157,7 @@ public class XmlXpathIndexer {
 
         long lineNum = 1; // initial line number (we start in the first line)
 
-        while ( (nextByte(cis, buf)) != -1 ) {
+        while ( (nextByte(countStream, buf)) != -1 ) {
             oldRead = read; // save previous byte
             read = buf[0];
             // first keep track of all the line breaks, so we can count the line numbers
@@ -153,14 +169,14 @@ public class XmlXpathIndexer {
             }
             // now check for XML tags
             if ( read == '<' && !inQuote ) { // possible start tag
-                startPos = cis.getByteCount() -1; // we want the '<' included
+                startPos = countStream.getByteCount() -1; // we want the '<' included
                 oldRead = read; // save previous byte
-                nextByte(cis, buf);
+                nextByte(countStream, buf);
                 read = buf[0];
                 if ( read == '!' || read == '?' ) {
                     // we don't bother with header and comments
                     // read util the next '<' WITHOUT recording
-                    int skippedLines = skipSpecialSection(cis, buf);
+                    int skippedLines = skipSpecialSection(countStream, buf);
                     lineNum += skippedLines;
                     startPos = -1; // reset position
                 } else if ( read == '/' ) { // we have the start of a closing tag -> begin recording
@@ -175,7 +191,7 @@ public class XmlXpathIndexer {
                 inQuote = !inQuote;
             }
             if ( read == '>' && !inQuote ) {
-                stopPos = cis.getByteCount();
+                stopPos = countStream.getByteCount();
                 if ( startTag ) { // end of start tag
                     if ( oldRead == '/' ) { // self closing start tag
                         String tagName = getTagName(bb, ignoreNSPrefix);
@@ -235,7 +251,13 @@ public class XmlXpathIndexer {
             }
         } // end of reading
 
-        cis.close();
+        if (digestStream != null) {
+            byte[] checksum = digestStream.getMessageDigest().digest();
+            String checksumHexString = asHex(checksum);
+            index.setChecksum(checksumHexString);
+        }
+
+        countStream.close();
         is.close();
         return index;
     }
@@ -400,6 +422,24 @@ public class XmlXpathIndexer {
         public String getName() {
             return name;
         }
+    }
+
+
+    /**
+     * Creates a hexadecimal String from a byte array of a File hash.
+     *
+     * @param buf the byte[] to turn into a hex string.
+     * @return the hex encoded String representation of the byte array.
+     * @see java.security.MessageDigest#digest()
+     */
+    private static String asHex(byte[] buf) {
+        // from: http://forums.xkcd.com/viewtopic.php?f=11&t=16666&p=553936
+        char[] chars = new char[2 * buf.length];
+        for (int i = 0; i < buf.length; ++i) {
+            chars[2 * i] = HEX_CHARS[(buf[i] & 0xF0) >>> 4];
+            chars[2 * i + 1] = HEX_CHARS[buf[i] & 0x0F];
+        }
+        return new String(chars);
     }
 
 }

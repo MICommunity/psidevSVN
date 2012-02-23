@@ -14,6 +14,8 @@ public class StandardXpathIndex implements XpathIndex {
 
     private boolean recordLineNumber;
 
+    private String checksum;
+
     ////////////////////
     // Constructors
 
@@ -104,6 +106,14 @@ public class StandardXpathIndex implements XpathIndex {
         }
 
         this.getElements(xpath).add(element);
+    }
+
+    public String getChecksum() {
+        return checksum;
+    }
+
+    public void setChecksum(String checksum) {
+        this.checksum = checksum;
     }
 
     ////////////////////
