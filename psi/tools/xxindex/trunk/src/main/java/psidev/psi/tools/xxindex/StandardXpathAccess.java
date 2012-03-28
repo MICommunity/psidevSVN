@@ -2,11 +2,9 @@ package psidev.psi.tools.xxindex;
 
 import psidev.psi.tools.xxindex.index.*;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -23,6 +21,7 @@ public class StandardXpathAccess implements XpathAccess {
     private XpathIndex index;
     private XmlElementExtractor extractor;
     private boolean ignoreNSPrefix = true;
+    private boolean isGzFile;
 
     ////////////////////
     // Constructors
@@ -30,6 +29,7 @@ public class StandardXpathAccess implements XpathAccess {
     /**
      * This constructor creates an xpath index (LineXpathIndex) from the specified XML file,
      * and will include all encountered xpaths in this index.
+     * Note: this XpathAccess can handle gz compressed files, but the performance will be impaired!
      *
      * @param file File with the XML file to index
      * @throws IOException when the file could not be accessed
@@ -67,9 +67,28 @@ public class StandardXpathAccess implements XpathAccess {
      * @see this#StandardXpathAccess(java.io.File, java.util.Set)
      */
     public StandardXpathAccess( File file, Set<String> aXpathInclusionSet, boolean recordLineNumbers ) throws IOException {
+
+        if (file == null) {
+            throw new IllegalArgumentException("The input file must not be null!");
+        }
+        if (!file.exists() || !file.canRead()) {
+            throw new IllegalArgumentException("Can not read from file! " + file.getAbsolutePath());
+        }
+
         this.file = file;
-        this.index = XmlXpathIndexer.buildIndex( new FileInputStream( file ), aXpathInclusionSet, recordLineNumbers );
-        this.extractor = new SimpleXmlElementExtractor();
+        FileInputStream fis = new FileInputStream(file);
+
+        // choosing the Extractor to use
+        if (file.getName().endsWith(".gz")) {
+            isGzFile = true;
+            this.index = XmlXpathIndexer.buildIndex(new GZIPInputStream(fis), aXpathInclusionSet, recordLineNumbers);
+            this.extractor = new GzXmlElementExtractor();
+        } else {
+            isGzFile = false;
+            this.index = XmlXpathIndexer.buildIndex( fis, aXpathInclusionSet, recordLineNumbers );
+            this.extractor = new SimpleXmlElementExtractor();
+        }
+
         String enc = extractor.detectFileEncoding( file.toURI().toURL() );
         if (enc != null) {
             extractor.setEncoding( enc );
@@ -216,19 +235,31 @@ public class StandardXpathAccess implements XpathAccess {
         // the end of the start tag (">"). Then return the complete start tag
         // (including all the attributes)
 
+        long startPos = element.getStart();
+
+        InputStream stream = null;
         FileInputStream fis = null;
-        BufferedInputStream bis = null;
         try {
             fis = new FileInputStream(file);
-            fis.getChannel().position(element.getStart());
-            bis = new BufferedInputStream(fis);
+
+            // check whether we are dealing with a gzip'ed file
+            if (isGzFile) {
+                stream = new GZIPInputStream(fis, 1048576); // 1MB read buffer
+                long skipped = stream.skip(startPos);
+                if (skipped != startPos) {
+                    throw new IllegalStateException("Could not position at requested location, reading compromised! Location: " + startPos);
+                }
+            } else {
+                fis.getChannel().position(startPos);
+                stream = new BufferedInputStream(fis, 1048576); // 1MB read buffer
+            }
 
             boolean stopFound = false;
             ByteBuffer bb = new ByteBuffer();
             byte[] buffer = new byte[1];
             byte read;
             while (!stopFound) {
-                bis.read(buffer);
+                stream.read(buffer);
                 read = buffer[0];
                 bb.append(read);
                 if (read == '>') {
@@ -240,7 +271,7 @@ public class StandardXpathAccess implements XpathAccess {
         } finally {
             try {
                 if (fis != null) { fis.close(); }
-                if (bis != null) { bis.close(); }
+                if (stream != null) { stream.close(); }
             } catch (IOException e) {
                 // ignore
             }
