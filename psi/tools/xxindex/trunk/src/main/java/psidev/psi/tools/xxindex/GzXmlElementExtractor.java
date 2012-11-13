@@ -57,6 +57,7 @@ public class GzXmlElementExtractor implements XmlElementExtractor {
      *
      * @param encoding The Charset to use to translate the read bytes.
      */
+    @SuppressWarnings(value = "unused")
     public GzXmlElementExtractor(Charset encoding) {
         this();
         setEncoding(encoding);
@@ -149,23 +150,31 @@ public class GzXmlElementExtractor implements XmlElementExtractor {
         }
 
         // create a input stream on a gz compressed file with 1MB buffer size
-        GZIPInputStream gzis = new GZIPInputStream(new FileInputStream(file), 1048576);
-        BufferedInputStream bis = new BufferedInputStream(gzis);
+        GZIPInputStream gzis = null;
+        byte[] bytes;
+        try {
+            gzis = new GZIPInputStream(new FileInputStream(file), 1048576);
+            BufferedInputStream bis = new BufferedInputStream(gzis);
 
-        long actuallySlipped = bis.skip(from);
-        if (actuallySlipped != from) {
-            throw new IllegalStateException("Could not position at requested location, reading compromised! Location: " + from);
+            long actuallySlipped = bis.skip(from);
+            if (actuallySlipped != from) {
+                throw new IllegalStateException("Could not position at requested location, reading compromised! Location: " + from);
+            }
+
+            Long length = to - from;
+            if (length > Integer.MAX_VALUE) {
+                throw new IllegalArgumentException("Can not read more than " + Integer.MAX_VALUE + " characters!");
+            }
+            bytes = new byte[length.intValue()];
+
+            // read into buffer
+            bis.read(bytes, 0, length.intValue());
+        } finally {
+            if (gzis != null) {
+                gzis.close();
+            }
         }
 
-        Long length = to - from;
-        if (length > Integer.MAX_VALUE) {
-            throw new IllegalArgumentException("Can not read more than " + Integer.MAX_VALUE + " characters!");
-        }
-        byte[] bytes = new byte[length.intValue()];
-
-        // read into buffer
-        bis.read(bytes, 0, length.intValue());
-        bis.close();
         return bytes;
     }
 
@@ -236,6 +245,9 @@ public class GzXmlElementExtractor implements XmlElementExtractor {
         }
         // fill the byte buffer
         gzin.read(bytes);
+        // close after we are done reading
+        gzin.close();
+
         // convert the bytes to String using ASCII
         String fileStart = new String(bytes, "ASCII");
 

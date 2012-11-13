@@ -56,6 +56,7 @@ public class SimpleXmlElementExtractor implements XmlElementExtractor {
      *
      * @param encoding The Charset to use to translate the read bytes.
      */
+    @SuppressWarnings(value = "unused")
     public SimpleXmlElementExtractor(Charset encoding) {
         this();
         setEncoding(encoding);
@@ -146,19 +147,25 @@ public class SimpleXmlElementExtractor implements XmlElementExtractor {
      *                                  is to big (> Integer.MAX_VALUE characters).
      */
     public byte[] readBytes(long from, long to, File file) throws IOException {
-        RandomAccessFile raf = new RandomAccessFile(file, "r");
+        RandomAccessFile raf = null;
+        byte[] bytes;
+        try {
+            raf = new RandomAccessFile(file, "r");
+            // go to specified start position
+            raf.seek(from);
+            Long length = to - from;
+            if (length > Integer.MAX_VALUE) {
+                throw new IllegalArgumentException("Can not read more than " + Integer.MAX_VALUE + " bytes!");
+            }
+            bytes = new byte[length.intValue()];
 
-        // go to specified start position
-        raf.seek(from);
-        Long length = to - from;
-        if (length > Integer.MAX_VALUE) {
-            throw new IllegalArgumentException("Can not read more than " + Integer.MAX_VALUE + " characters!");
+            // read into buffer
+            raf.read(bytes, 0, length.intValue());
+        } finally {
+            if (raf != null) {
+                raf.close();
+            }
         }
-        byte[] bytes = new byte[length.intValue()];
-
-        // read into buffer
-        raf.read(bytes, 0, length.intValue());
-        raf.close();
         return bytes;
     }
 
@@ -226,6 +233,7 @@ public class SimpleXmlElementExtractor implements XmlElementExtractor {
         }
         // fill the byte buffer
         in.read(bytes);
+        in.close();
         // convert the bytes to String using ASCII
         String fileStart = new String(bytes, "ASCII");
 
