@@ -1,13 +1,12 @@
 package psidev.psi.tools.xxindex;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import psidev.psi.tools.xxindex.index.*;
 
 import java.io.*;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Author: Florian Reisinger
@@ -15,7 +14,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class StandardXpathAccess implements XpathAccess {
 
-    private static final Log log = LogFactory.getLog( StandardXpathAccess.class );
+    private static final Log log = LogFactory.getLog(StandardXpathAccess.class);
 
     private File file;
     private XpathIndex index;
@@ -34,8 +33,8 @@ public class StandardXpathAccess implements XpathAccess {
      * @param file File with the XML file to index
      * @throws IOException when the file could not be accessed
      */
-    public StandardXpathAccess( File file ) throws IOException {
-        this( file, null );
+    public StandardXpathAccess(File file) throws IOException {
+        this(file, null);
     }
 
     /**
@@ -51,8 +50,8 @@ public class StandardXpathAccess implements XpathAccess {
      *                           to the index! Can be 'null' to ensure inclusion of all xpaths.
      * @throws IOException when the file could not be accessed
      */
-    public StandardXpathAccess( File file, Set<String> aXpathInclusionSet ) throws IOException {
-        this( file, aXpathInclusionSet, true );
+    public StandardXpathAccess(File file, Set<String> aXpathInclusionSet) throws IOException {
+        this(file, aXpathInclusionSet, true);
     }
 
     /**
@@ -66,7 +65,7 @@ public class StandardXpathAccess implements XpathAccess {
      * @throws IOException when the file could not be accessed
      * @see this#StandardXpathAccess(java.io.File, java.util.Set)
      */
-    public StandardXpathAccess( File file, Set<String> aXpathInclusionSet, boolean recordLineNumbers ) throws IOException {
+    public StandardXpathAccess(File file, Set<String> aXpathInclusionSet, boolean recordLineNumbers) throws IOException {
 
         if (file == null) {
             throw new IllegalArgumentException("The input file must not be null!");
@@ -85,13 +84,13 @@ public class StandardXpathAccess implements XpathAccess {
             this.extractor = new GzXmlElementExtractor();
         } else {
             isGzFile = false;
-            this.index = XmlXpathIndexer.buildIndex( fis, aXpathInclusionSet, recordLineNumbers );
+            this.index = XmlXpathIndexer.buildIndex(fis, aXpathInclusionSet, recordLineNumbers);
             this.extractor = new SimpleXmlElementExtractor();
         }
 
-        String enc = extractor.detectFileEncoding( file.toURI().toURL() );
+        String enc = extractor.detectFileEncoding(file.toURI().toURL());
         if (enc != null) {
-            extractor.setEncoding( enc );
+            extractor.setEncoding(enc);
         }
     }
 
@@ -129,8 +128,8 @@ public class StandardXpathAccess implements XpathAccess {
      * @return a List of Strings representing the XML elements specified with the xpath.
      * @throws IOException when IO Error while reading from the XML file.
      */
-    public List<String> getXmlSnippets( String xpath ) throws IOException {
-        return getXmlSnippets( xpath, null, null );
+    public List<String> getXmlSnippets(String xpath) throws IOException {
+        return getXmlSnippets(xpath, null, null);
     }
 
     /**
@@ -152,22 +151,22 @@ public class StandardXpathAccess implements XpathAccess {
      * @throws IOException when IO Error while reading from the XML file.
      * @see this#getXmlSnippets(String)
      */
-    public List<String> getXmlSnippets( String xpath, Long start, Long stop ) throws IOException {
+    public List<String> getXmlSnippets(String xpath, Long start, Long stop) throws IOException {
         List<String> results = new ArrayList<String>();
         // check xpath
         // check if xpath in index
-        if ( index.containsXpath( xpath ) ) {
+        if (index.containsXpath(xpath)) {
             // retrieve ByteRange from index
-            List<IndexElement> ranges = index.getElements( xpath );
+            List<IndexElement> ranges = index.getElements(xpath);
             // get String for ByteRange
-            for ( IndexElement range : ranges ) {
-                if ( ( start == null || range.getStart() >= start ) && ( stop == null || range.getStop() <= stop ) ) {
-                    results.add( extractor.readString( range.getStart(), range.getStop(), file ) );
+            for (IndexElement range : ranges) {
+                if ((start == null || range.getStart() >= start) && (stop == null || range.getStop() <= stop)) {
+                    results.add(extractor.readString(range.getStart(), range.getStop(), file));
                 }
             }
         } else {
             // Error message
-            log.error( "The index does not contain any entry for the requested xpath: " + xpath );
+            log.info("The index does not contain any entry for the requested xpath: " + xpath);
         }
         return results;
     }
@@ -179,8 +178,8 @@ public class StandardXpathAccess implements XpathAccess {
      * @param xpath a xpath expression valid for the XML file.
      * @return a Iterator over the Strings representing the XML elements specified with the xpath.
      */
-    public Iterator<String> getXmlSnippetIterator( String xpath ) {
-        return getXmlSnippetIterator( xpath, null, null );
+    public Iterator<String> getXmlSnippetIterator(String xpath) {
+        return getXmlSnippetIterator(xpath, null, null);
     }
 
     /**
@@ -195,15 +194,15 @@ public class StandardXpathAccess implements XpathAccess {
      * @return a Iterator over the Strings representing the XML elements specified with the xpath.
      * @see this#getXmlSnippets(String, Long, Long)
      */
-    public Iterator<String> getXmlSnippetIterator( String xpath, Long start, Long stop ) {
+    public Iterator<String> getXmlSnippetIterator(String xpath, Long start, Long stop) {
         Iterator<String> iter;
-        if ( index.containsXpath( xpath ) ) {
+        if (index.containsXpath(xpath)) {
             // retrieve ByteRange from index
-            List<IndexElement> ranges = index.getElements( xpath );
+            List<IndexElement> ranges = index.getElements(xpath);
 
-            iter = new XmlSnippetIterator( ranges, extractor, file, start, stop );
+            iter = new XmlSnippetIterator(ranges, extractor, file, start, stop);
         } else {
-            log.error( "The index does not contain any entry for the requested xpath: " + xpath );
+            log.info("The index does not contain any entry for the requested xpath: " + xpath);
             // return iterator over empty list
             List<String> s = Collections.emptyList();
             iter = s.iterator();
@@ -215,8 +214,8 @@ public class StandardXpathAccess implements XpathAccess {
      * @param xpath the xpath expression of the XML element of interest.
      * @return the number of elements that correspond to the specified xpath or -1 if the xpath is not recognized.
      */
-    public int getXmlElementCount( String xpath ) {
-        return index.getElementCount( xpath );
+    public int getXmlElementCount(String xpath) {
+        return index.getElementCount(xpath);
     }
 
     /**
@@ -270,8 +269,12 @@ public class StandardXpathAccess implements XpathAccess {
 
         } finally {
             try {
-                if (fis != null) { fis.close(); }
-                if (stream != null) { stream.close(); }
+                if (fis != null) {
+                    fis.close();
+                }
+                if (stream != null) {
+                    stream.close();
+                }
             } catch (IOException e) {
                 // ignore
             }
@@ -289,24 +292,24 @@ public class StandardXpathAccess implements XpathAccess {
         private XmlElementExtractor extractor;
         private File file;
 
-        public XmlSnippetIterator( List<IndexElement> ranges, XmlElementExtractor extractor, File file ) {
+        public XmlSnippetIterator(List<IndexElement> ranges, XmlElementExtractor extractor, File file) {
             this.iterator = ranges.iterator();
             this.extractor = extractor;
             this.file = file;
         }
 
-        public XmlSnippetIterator( List<IndexElement> elements, XmlElementExtractor extractor, File file, Long start, Long stop ) {
+        public XmlSnippetIterator(List<IndexElement> elements, XmlElementExtractor extractor, File file, Long start, Long stop) {
             List<IndexElement> validElements; // the list of elements we will iterate over
 
             // if both borders are unspecified, use all elements (initial list)
-            if ( start == null && stop == null ) {
+            if (start == null && stop == null) {
                 validElements = elements;
             } else { // if at least one border is specified, we need a new list containing only valid elements
                 validElements = new ArrayList<IndexElement>();
                 // iterate over the initial list and add only the valid elements to the new list
-                for ( IndexElement element : elements ) {
-                    if ( ( start == null || element.getStart() >= start ) && ( stop == null || element.getStop() <= stop ) ) {
-                        validElements.add( element );
+                for (IndexElement element : elements) {
+                    if ((start == null || element.getStart() >= start) && (stop == null || element.getStop() <= stop)) {
+                        validElements.add(element);
                     }
                 }
             }
@@ -329,9 +332,9 @@ public class StandardXpathAccess implements XpathAccess {
             String result;
             IndexElement range = iterator.next();
             try {
-                result = extractor.readString( range.getStart(), range.getStop(), file );
-            } catch ( IOException e ) {
-                throw new IllegalStateException( "Caught IOException while reading from file: " + file.getName(), e );
+                result = extractor.readString(range.getStart(), range.getStop(), file);
+            } catch (IOException e) {
+                throw new IllegalStateException("Caught IOException while reading from file: " + file.getName(), e);
             }
             return result;
         }
@@ -351,8 +354,8 @@ public class StandardXpathAccess implements XpathAccess {
      *         the xpath and their starting line number.
      * @throws IOException when IO Error while reading from the XML file.
      */
-    public List<XmlElement> getXmlElements( String xpath ) throws IOException {
-        return getXmlElements( xpath, null, null );
+    public List<XmlElement> getXmlElements(String xpath) throws IOException {
+        return getXmlElements(xpath, null, null);
     }
 
     /**
@@ -370,25 +373,25 @@ public class StandardXpathAccess implements XpathAccess {
      * @throws IOException when IO Error while reading from the XML file.
      * @see this#getXmlSnippets(String, Long, Long)
      */
-    public List<XmlElement> getXmlElements( String xpath, Long start, Long stop ) throws IOException {
+    public List<XmlElement> getXmlElements(String xpath, Long start, Long stop) throws IOException {
         List<XmlElement> results = new ArrayList<XmlElement>();
         // check xpath
         // check if xpath in index
         // if yes, transform (range + line number) into (xml snippet + line number)
-        if ( index.containsXpath( xpath ) ) {
+        if (index.containsXpath(xpath)) {
             // retrieve the xml element (range + line number) from index
-            List<IndexElement> elements = index.getElements( xpath );
+            List<IndexElement> elements = index.getElements(xpath);
             // get String for ByteRange and get the line number for the range
-            for ( IndexElement element : elements ) {
-                if ( ( start == null || element.getStart() >= start ) && ( stop == null || element.getStop() <= stop ) ) {
-                    String tmp = extractor.readString( element.getStart(), element.getStop(), file );
+            for (IndexElement element : elements) {
+                if ((start == null || element.getStart() >= start) && (stop == null || element.getStop() <= stop)) {
+                    String tmp = extractor.readString(element.getStart(), element.getStop(), file);
                     long posTmp = element.getLineNumber();
-                    results.add( new XmlElement( tmp, posTmp ) );
+                    results.add(new XmlElement(tmp, posTmp));
                 }
             }
         } else {
             // Error message
-            log.error( "The index does not contain any entry for the requested xpath: " + xpath );
+            log.info("The index does not contain any entry for the requested xpath: " + xpath);
         }
         return results;
     }
@@ -401,8 +404,8 @@ public class StandardXpathAccess implements XpathAccess {
      * @return a Iterator over the LineXmlElement representing the XML elements specified with
      *         the xpath and their starting line number.
      */
-    public Iterator<XmlElement> getXmlElementIterator( String xpath ) {
-        return getXmlElementIterator( xpath, null, null );
+    public Iterator<XmlElement> getXmlElementIterator(String xpath) {
+        return getXmlElementIterator(xpath, null, null);
     }
 
     /**
@@ -417,16 +420,16 @@ public class StandardXpathAccess implements XpathAccess {
      * @return a Iterator over the LineXmlElement representing the XML elements specified with
      *         the xpath and their starting line number.
      */
-    public Iterator<XmlElement> getXmlElementIterator( String xpath, Long start, Long stop ) {
+    public Iterator<XmlElement> getXmlElementIterator(String xpath, Long start, Long stop) {
         Iterator<XmlElement> iter;
-        if ( index.containsXpath( xpath ) ) {
+        if (index.containsXpath(xpath)) {
             // retrieve ByteRange from index
-            List<IndexElement> elements = index.getElements( xpath );
+            List<IndexElement> elements = index.getElements(xpath);
 
-            iter = new XmlElementIterator( elements, extractor, file, start, stop );
+            iter = new XmlElementIterator(elements, extractor, file, start, stop);
         } else {
             // Error message
-            log.error( "The index does not contain any entry for the requested xpath: " + xpath );
+            log.info("The index does not contain any entry for the requested xpath: " + xpath);
             // return iterator over empty list
             List<XmlElement> s = Collections.emptyList();
             iter = s.iterator();
@@ -443,23 +446,23 @@ public class StandardXpathAccess implements XpathAccess {
         private XmlElementExtractor extractor;
         private File file;
 
-        public XmlElementIterator( List<IndexElement> elements, XmlElementExtractor extractor, File file ) {
+        public XmlElementIterator(List<IndexElement> elements, XmlElementExtractor extractor, File file) {
             this.iterator = elements.iterator();
             this.extractor = extractor;
             this.file = file;
         }
 
-        public XmlElementIterator( List<IndexElement> elements, XmlElementExtractor extractor, File file, Long start, Long stop ) {
+        public XmlElementIterator(List<IndexElement> elements, XmlElementExtractor extractor, File file, Long start, Long stop) {
             List<IndexElement> validElements; // the list of elements we will iterate over
             // if both borders are unspecified, iterate over all elements (initial list)
-            if ( start == null && stop == null ) {
+            if (start == null && stop == null) {
                 validElements = elements;
             } else { // if at least one borders is specified, we need a new list containing only valid elements
                 validElements = new ArrayList<IndexElement>();
                 // iterate over the initial list and only add the valid elements to the new list
-                for ( IndexElement element : elements ) {
-                    if ( ( start == null || element.getStart() >= start ) && ( stop == null || element.getStop() <= stop ) ) {
-                        validElements.add( element );
+                for (IndexElement element : elements) {
+                    if ((start == null || element.getStart() >= start) && (stop == null || element.getStop() <= stop)) {
+                        validElements.add(element);
                     }
                 }
             }
@@ -483,11 +486,11 @@ public class StandardXpathAccess implements XpathAccess {
             XmlElement result;
             IndexElement element = iterator.next();
             try {
-                String xmlSnippet = extractor.readString( element.getStart(), element.getStop(), file );
+                String xmlSnippet = extractor.readString(element.getStart(), element.getStop(), file);
                 long position = element.getLineNumber();
-                result = new XmlElement( xmlSnippet, position );
-            } catch ( IOException e ) {
-                throw new IllegalStateException( "Caught IOException while reading from file: " + file.getName() );
+                result = new XmlElement(xmlSnippet, position);
+            } catch (IOException e) {
+                throw new IllegalStateException("Caught IOException while reading from file: " + file.getName());
             }
             return result;
         }
