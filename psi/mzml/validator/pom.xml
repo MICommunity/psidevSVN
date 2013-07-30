@@ -81,9 +81,42 @@
     <!-- Additions Florian -->
     <profiles>
         <profile>
-            <id>gui</id>
+            <id>gui-app</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <!-- to create a executable jar to start the MzMLValidatorGUI -->
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <mainClass>psidev.psi.ms.MzMLValidatorGUI</mainClass>
+                                </manifest>
+                            </archive>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                        </configuration>
+                        <executions>
+                            <execution>
+                              <id>make-assembly</id>
+                              <phase>package</phase> <!-- bind to the packaging phase -->
+                              <goals>
+                                <goal>single</goal>
+                              </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>gui-assembly</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
             </activation>
             <build>
                 <plugins>
@@ -101,27 +134,6 @@
                         </archive>
                       </configuration>
 					</plugin>
-					<!-- the shade plugin builds an all-in-one jar -->
-					<!--<plugin>-->
-						<!--<groupId>org.apache.maven.plugins</groupId>-->
-						<!--<artifactId>maven-shade-plugin</artifactId>-->
-						<!--<version>2.0</version>-->
-						<!--<executions>-->
-							<!--<execution>-->
-								<!--<phase>package</phase>-->
-								<!--<goals>-->
-									<!--<goal>shade</goal>-->
-								<!--</goals>-->
-								<!--<configuration>-->
-									<!--<transformers>-->
-										<!--<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">-->
-											<!--<mainClass>psidev.psi.ms.MzMLValidatorGUI</mainClass>-->
-										<!--</transformer>-->
-									<!--</transformers>-->
-								<!--</configuration>-->
-							<!--</execution>-->
-						<!--</executions>-->
-                    <!--</plugin>-->
                 </plugins>
             </build>
         </profile>
