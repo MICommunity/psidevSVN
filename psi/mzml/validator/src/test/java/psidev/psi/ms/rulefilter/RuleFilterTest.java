@@ -1,23 +1,28 @@
 package psidev.psi.ms.rulefilter;
 
-import static org.junit.Assert.fail;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import psidev.psi.ms.Resources;
 
+import javax.xml.bind.JAXBException;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Set;
 
-import javax.xml.bind.JAXBException;
-
-import org.junit.Test;
+import static org.junit.Assert.fail;
 
 public class RuleFilterTest {
-	private static final String FILE_RULE_FILTER = "ruleFilterMIAPE.xml";
+
+	private static final String FILE_RULE_FILTER = "/ruleFilterMIAPE.xml";
+	@Rule
+	public TemporaryFolder tf = new TemporaryFolder();
 
 	@Test
 	public void ruleFilterTest() {
-
+		File outputFolder = tf.newFolder("ruleFilterTest");
 		try {
-			File file = new File(FILE_RULE_FILTER);
+			File file = Resources.extractResource(FILE_RULE_FILTER, outputFolder);
 			final RuleFilterManager filterManager = new RuleFilterManager(file);
 			filterManager.printRuleFilter();
 			HashMap<String, String> selectedOptions = new HashMap<String, String>();
@@ -31,10 +36,10 @@ public class RuleFilterTest {
 
 	@Test
 	public void ruleFilterTest2() {
-
+		File outputFolder = tf.newFolder("ruleFilterTest2");
 		try {
 			System.out.println("\n\n---------------------");
-			File file = new File(FILE_RULE_FILTER);
+			File file = Resources.extractResource(FILE_RULE_FILTER, outputFolder);
 			final RuleFilterManager filterManager = new RuleFilterManager(file);
 			HashMap<String, String> selectedOptions = new HashMap<String, String>();
 			selectedOptions.put(MaldiOrEsiCondition.getID(), MaldiOrEsiCondition.ESI.getOption());
@@ -48,5 +53,4 @@ public class RuleFilterTest {
 			fail();
 		}
 	}
-
 }
