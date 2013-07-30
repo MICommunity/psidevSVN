@@ -1,7 +1,6 @@
 /*
  * MzMLValidatorGUI.java Created on __DATE__, __TIME__
  */
-
 package psidev.psi.ms;
 
 import java.awt.BorderLayout;
@@ -35,6 +34,8 @@ import psidev.psi.tools.validator.ValidatorMessage;
 import psidev.psi.tools.validator.util.ValidatorReport;
 
 import com.sun.java.swing.plaf.windows.WindowsLookAndFeel;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * 
@@ -49,7 +50,9 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 	protected RuleFilterManager ruleFilterManager;
 	private static final String DEFAULT_PROGRESS_MESSAGE = "Select a file and press validate...";
 
-	/** Creates new form MzMLValidatorGUI */
+	/**
+	 * Creates new form MzMLValidatorGUI
+	 */
 	public MzMLValidatorGUI() {
 
 		initComponents();
@@ -267,8 +270,8 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 
 		jPanel8.setBorder(javax.swing.BorderFactory.createTitledBorder("Type of validation"));
 
-		jComboValidationType.setModel(new javax.swing.DefaultComboBoxModel(new String[] {
-				"MIAPE-compliant validation", "Semantic validation" }));
+		jComboValidationType.setModel(new javax.swing.DefaultComboBoxModel(new String[]{
+			"MIAPE-compliant validation", "Semantic validation"}));
 		jComboValidationType.setToolTipText("Select the type of validation");
 		jComboValidationType.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -411,10 +414,11 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 		// GEN-END:initComponents
 
 	private void jComboValidationTypeActionPerformed(java.awt.event.ActionEvent evt) {
-		if (isMIAPEValidationSelected())
+		if (isMIAPEValidationSelected()) {
 			enableRadioButtons(true);
-		else if (isSemanticValidationSelected())
+		} else if (isSemanticValidationSelected()) {
 			enableRadioButtons(false);
+	}
 	}
 
 	private void enableRadioButtons(boolean b) {
@@ -496,7 +500,14 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 					if (validator == null) {
 						jProgressBar.setString("Loading configuration files...");
 
-						InputStream ontology = new FileInputStream(getProperty("ontologies.file"));
+						InputStream ontology = null;
+						if (new File(getProperty("ontologies.file")).exists()) {
+							System.out.println("Using file resource " + getProperty("ontologies.file"));
+							ontology = new FileInputStream(getProperty("ontologies.file"));
+						} else {
+							System.out.println("Using classpath resource " + getProperty("ontologies.file"));
+							ontology = MzMLValidator.class.getResourceAsStream("/" + getProperty("ontologies.file"));
+						}
 
 						validator = new MzMLValidator(ontology, getMappingRuleFile(),
 								getObjectRuleFile(), MzMLValidatorGUI.this);
@@ -507,8 +518,9 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 						validator.reset(getMappingRuleFile(), getObjectRuleFile());
 					}
 					// this will add to the validator the rules to be skipped
-					if (isMIAPEValidationSelected() && ruleFilterManager != null)
+					if (isMIAPEValidationSelected() && ruleFilterManager != null) {
 						ruleFilterManager.filterRulesByUserOptions(getSelectedOptions());
+					}
 
 					// common settings to set each time the validation button is
 					// pressed
@@ -543,24 +555,42 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 		// by default:
 		String mappingRuleFile = "ms-mapping.xml";
 		if (this.jComboValidationType.getSelectedItem().equals(
-				ValidationType.MIAPE_VALIDATION.getName()))
+				ValidationType.MIAPE_VALIDATION.getName())) {
 			mappingRuleFile = getProperty("mapping.rule.file.miape.validation");
-		else if (this.jComboValidationType.getSelectedItem().equals(
-				ValidationType.SEMANTIC_VALIDATION.getName()))
+		} else if (this.jComboValidationType.getSelectedItem().equals(
+				ValidationType.SEMANTIC_VALIDATION.getName())) {
 			mappingRuleFile = getProperty("mapping.rule.file.semantic.validation");
-
+		}
+		if (new File(mappingRuleFile).exists()) {
 		return mappingRuleFile;
+		} else {
+			try {
+				return Resources.extractResource("/" + mappingRuleFile).getAbsolutePath();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+	}
+		}
+		throw new NullPointerException("Could not locate mapping rule file at " + mappingRuleFile);
 	}
 
 	public String getObjectRuleFile() {
 		// by default:
 		String objectRuleFile = "ObjectRules.xml";
-		if (isMIAPEValidationSelected())
+		if (isMIAPEValidationSelected()) {
 			objectRuleFile = getProperty("object.rule.file.miape.validation");
-		else if (isSemanticValidationSelected())
+		} else if (isSemanticValidationSelected()) {
 			objectRuleFile = getProperty("object.rule.file.semantic.validation");
-
+		}
+		if (new File(objectRuleFile).exists()) {
 		return objectRuleFile;
+		} else {
+			try {
+				return Resources.extractResource("/" + objectRuleFile).getAbsolutePath();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+	}
+		}
+		throw new NullPointerException("Could not locate object rule file at " + objectRuleFile);
 	}
 
 	boolean isSemanticValidationSelected() {
@@ -578,8 +608,9 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 		InputStream is;
 
 		is = cl.getResourceAsStream("validation.properties");
-		if (is == null)
+		if (is == null) {
 			throw new IllegalArgumentException("validation.properties" + " file not found");
+		}
 
 		Properties prop = new Properties();
 		try {
@@ -597,8 +628,8 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 		jProgressBar.setValue(jProgressBar.getMaximum());
 		if (error != null) {
 			JOptionPane.showMessageDialog(this,
-					new String[] { "A problem occurred when attempting to validate the mzML file!",
-							error.getMessage() }, "Error occurred during validation!",
+					new String[]{"A problem occurred when attempting to validate the mzML file!",
+				error.getMessage()}, "Error occurred during validation!",
 					JOptionPane.ERROR_MESSAGE);
 		}
 		Collection<ValidatorMessage> messages = (Collection<ValidatorMessage>) sw.get();
@@ -643,7 +674,7 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 				.append(report.getCvRulesValid().size()).append("</td></tr>");
 		sb.append("</table></body></html>");
 
-		JOptionPane.showMessageDialog(this, new String[] { "", sb.toString() },
+		JOptionPane.showMessageDialog(this, new String[]{"", sb.toString()},
 				"CvMappingRule Report", JOptionPane.INFORMATION_MESSAGE);
 
 	}
@@ -658,17 +689,21 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 				.append(report.getCvRulesNotChecked().size()).append("</td></tr>");
 		sb.append("<tr align='left'><td>");
 		// red in case of more than 0 invalid rules
-		if (report.getCvRulesInvalidXpath().size() > 0)
+		if (report.getCvRulesInvalidXpath().size() > 0) {
 			sb.append("<font color='red'>");
+		}
 		sb.append("CvMappingRules with invalid Xpath: ");
-		if (report.getCvRulesInvalidXpath().size() > 0)
+		if (report.getCvRulesInvalidXpath().size() > 0) {
 			sb.append("</font>");
+		}
 		sb.append("</td><td>");
-		if (report.getCvRulesInvalidXpath().size() > 0)
+		if (report.getCvRulesInvalidXpath().size() > 0) {
 			sb.append("<font color='red'>");
+		}
 		sb.append(report.getCvRulesInvalidXpath().size());
-		if (report.getCvRulesInvalidXpath().size() > 0)
+		if (report.getCvRulesInvalidXpath().size() > 0) {
 			sb.append("</font>");
+		}
 		sb.append("</td></tr>");
 		sb.append("<tr align='left'><td>CvMappingRules with valid Xpath, but no hit: </td><td>")
 				.append(report.getCvRulesValidXpath().size()).append("</td></tr>");
@@ -681,39 +716,47 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 				+ report.getObjectRulesNotChecked().size() + "</td></tr>");
 		sb.append("<tr align='left'><td>");
 		// red in case of more than 0 invalid rules
-		if (report.getObjectRulesInvalid().size() > 0)
+		if (report.getObjectRulesInvalid().size() > 0) {
 			sb.append("<font color='red'>");
+		}
 		sb.append("ObjectRules run & invalid:");
-		if (report.getObjectRulesInvalid().size() > 0)
+		if (report.getObjectRulesInvalid().size() > 0) {
 			sb.append("</font>");
+		}
 		sb.append("</td><td>");
-		if (report.getObjectRulesInvalid().size() > 0)
+		if (report.getObjectRulesInvalid().size() > 0) {
 			sb.append("<font color='red'>");
+		}
 		sb.append(report.getObjectRulesInvalid().size());
-		if (report.getObjectRulesInvalid().size() > 0)
+		if (report.getObjectRulesInvalid().size() > 0) {
 			sb.append("</font>");
+		}
 		sb.append("</td></tr>");
 		sb.append("<tr align='left'><td>ObjectRules run & valid:</td><td>"
 				+ report.getObjectRulesValid().size() + "</td></tr>");
 		sb.append("<tr><td></td></tr>");
 
 		sb.append("<tr align='left'><td>");
-		if (messageNumber > 0)
+		if (messageNumber > 0) {
 			sb.append("<font color='red'>");
+		}
 		sb.append("Messages received: ");
-		if (messageNumber > 0)
+		if (messageNumber > 0) {
 			sb.append("</font>");
+		}
 		sb.append("</td><td>");
-		if (messageNumber > 0)
+		if (messageNumber > 0) {
 			sb.append("<font color='red'>");
+		}
 		sb.append(messageNumber);
-		if (messageNumber > 0)
+		if (messageNumber > 0) {
 			sb.append("</font>");
+		}
 		sb.append("</td></tr>");
 
 		sb.append("</table></body></html>");
 
-		JOptionPane.showMessageDialog(this, new String[] { "", sb.toString() },
+		JOptionPane.showMessageDialog(this, new String[]{"", sb.toString()},
 				"Rule Execution Report", JOptionPane.INFORMATION_MESSAGE);
 
 	}
@@ -884,7 +927,6 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 		}
 		return conditionSet;
 	}
-
 	// GEN-BEGIN:variables
 	// Variables declaration - do not modify
 	private javax.swing.ButtonGroup buttonGroup1;
@@ -911,6 +953,5 @@ public class MzMLValidatorGUI extends javax.swing.JPanel implements RuleFilterAg
 	private javax.swing.JScrollPane jScrollPane1;
 	private javax.swing.JTextArea jTextAreaMessages;
 	private javax.swing.JTextField jTextInputFile;
-	// End of variables declaration//GEN-END:variables
-
+	// End of variables declaration                   
 }

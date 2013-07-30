@@ -116,8 +116,18 @@ public class MzMLValidator extends Validator {
 			FileNotFoundException, CvRuleReaderException {
 		super(aOntologyConfig);
 
-		final FileInputStream cvMappingFile = new FileInputStream(aCvMappingFile);
-		final FileInputStream objectRuleFile = new FileInputStream(aCodedRuleFile);
+		InputStream cvMappingFile = null;
+		if(new File(aCvMappingFile).exists()) {
+			cvMappingFile = new FileInputStream(aCvMappingFile);
+		}else{
+			cvMappingFile = MzMLValidator.class.getResourceAsStream("/"+aCvMappingFile);
+		}
+		InputStream objectRuleFile = null;
+		if(new File(aCodedRuleFile).exists()) {
+			objectRuleFile = new FileInputStream(aCodedRuleFile);
+		}else{
+			objectRuleFile = MzMLValidator.class.getResourceAsStream("/"+aCodedRuleFile);
+		}
 		this.setObjectRules(objectRuleFile);
 		this.setCvMappingRules(cvMappingFile);
 		try {
