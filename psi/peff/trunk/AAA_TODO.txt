@@ -1,0 +1,27 @@
+
+Specification:
+- Review and refine
+- No known missing elements
+
+Controlled vocabulary
+- review and refine all terms
+- Consider adding:
+  Processed vs chain etc.
+  
+exon
+  
+intron
+  
+5'UTR
+
+  3'UTR
+
+  ...
+- Decide whether all this should go into the PSI-MS or standalone
+
+
+
+
+
+
+
