@@ -1,7 +1,7 @@
 
 Specification:
 - Review and refine
-- No known missing elements
+- Add elements to support proteogenomics?
 
 Controlled vocabulary
 - review and refine all terms
@@ -25,6 +25,21 @@ Example file:
 - Add an example use of every term in the OBO file
 
 
+Suggestions from Gerben to work in proteogenomics explicitly:
+•	Include a proteogenomics use case:
+	o	add CV for proteogenomics
+		?	header CV:
+		?	mapping + downstream analysis
+		?	(manuscript)
+		?	link to ENA-SRA
+		?	sequence CV:
+		?	chrom location
+		?	functional region, start triplet, RF
+		?	…
+	o	create PEFF writer for proteogenomics DB-creation.
+	o	change manuscript to include this proteogenomics use case
+•	contact BioPerl/BioPython community to include PEFF format
+•	contact Search Engine providers to start supporting PEFF format?
 
 
 
