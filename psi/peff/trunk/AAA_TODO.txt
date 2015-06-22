@@ -19,6 +19,10 @@ intron
   ...
 - Decide whether all this should go into the PSI-MS or standalone
 
+Example file:
+- Update to be fully compliant with the new decisions
+- Manually add some elements shows the easy stuff and fully encodes the tricky stuff (indels, etc.)
+- Add an example use of every term in the OBO file
 
 
 
